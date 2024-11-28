@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:MaintainHome.Behaviors"
+             x:Class="MaintainHome.Views.Registration"
+             Padding="10">
+
+    <StackLayout Spacing="20" VerticalOptions="Center">
+        <Label Text="Create Account" FontSize="32" HorizontalOptions="Center" />
+
+        <Entry x:Name="UsernameEntry" Placeholder="Username" TextColor="Black" BackgroundColor="White" />
+        <Entry x:Name="EmailEntry" Placeholder="Email" TextColor="Black" BackgroundColor="White"/>
+        <!--<Entry.Behaviors>
+                <behaviors:EmailValidationBehavior />
+            </Entry.Behaviors>
+        </Entry>-->
+        <Entry x:Name="PhoneEntry" Placeholder="Phone" TextColor="Black" BackgroundColor="White">
+            <Entry.Behaviors>
+                <behaviors:PhoneNumberBehavior />
+            </Entry.Behaviors>
+        </Entry>
+        <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True" TextColor="Black" BackgroundColor="White" />
+        <Button Text="Register" Clicked="OnRegisterButtonClicked" />
+
+        <Label x:Name="RegisterMessageLabel" Text="" TextColor="Red" HorizontalOptions="Center" />
+
+        <Button Text="Back to Login" Clicked="OnBackToLoginButtonClicked" />
+    </StackLayout>
+</ContentPage>
+
