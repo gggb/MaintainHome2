@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using MaintainHome.Models;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using MaintainHome.Helper;
-//using Android.Gms.Tasks;
+//using Android.Gms.Tasks ;
 //using Android.App;
 //using Android.App;
 //using static Android.Graphics.ImageDecoder;
@@ -377,6 +377,7 @@ namespace MaintainHome.Database
             }
           
         }
+
         
         private static async Task LoadInitialNotification(SQLiteAsyncConnection database)
         {
