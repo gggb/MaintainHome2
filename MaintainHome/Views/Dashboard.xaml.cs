@@ -3,6 +3,7 @@ using MaintainHome.Database;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 
 namespace MaintainHome.Views
 {
@@ -13,14 +14,26 @@ namespace MaintainHome.Views
         private readonly TasksRepository _tasksRepository;
         private readonly CategoryRepository _categoryRepository;
 
+        public ObservableCollection<Tasks> AllTasks { get; private set; } = new ObservableCollection<Tasks>();
+        public ICommand OnTaskDoubleTapped { get; }
+
         public Dashboard()
         {
             InitializeComponent();
+            BindingContext = this; // Set the BindingContext
+
             _tasksRepository = new TasksRepository();  // Initialize the tasks repository
             _categoryRepository = new CategoryRepository();  // Initialize the categories repository
 
             LoadData();  // Load tasks and categories from the database
-            //UpdateTrafficLightIcon();
+
+            OnTaskDoubleTapped = new Command<Tasks>(OnTaskDoubleTappedHandler);
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            ApplyEmphasisToOverdueTasks();
         }
 
         private async void LoadData()
@@ -35,7 +48,11 @@ namespace MaintainHome.Views
                 var categories = await _categoryRepository.GetAllCategoriesAsync();
                 _categories = categories.ToDictionary(c => c.CategoryId, c => c.Title);
 
-                FilterTasks();  // Process tasks for display
+                // Process tasks for display
+                FilterAndSortTasks();
+
+                // Emphasize overdue tasks right after loading
+                ApplyEmphasisToOverdueTasks();
 
                 // Update traffic light icon after loading data
                 UpdateTrafficLightIcon();
@@ -46,87 +63,88 @@ namespace MaintainHome.Views
             }
         }
 
-
-        private void FilterTasks()
+        private void FilterAndSortTasks()
         {
-            var overdueTasks = _tasks.Where(t => t.DueDate < DateTime.Now).ToList();
-            var scheduledTasks = _tasks.Where(t => t.DueDate >= DateTime.Now)
-                                       .GroupBy(t => t.CategoryId)
-                                       .Select(g => new
-                                       {
-                                           Category = _categories.ContainsKey(g.Key) ? _categories[g.Key] : "Unknown",
-                                           Tasks = g.ToList()
-                                       })
-                                       .ToList();
+            var sortedTasks = _tasks.OrderBy(t => t.DueDate).ToList();
 
-            overdueTasksListView.ItemsSource = overdueTasks;
-            scheduledTasksListView.ItemsSource = scheduledTasks;
+            AllTasks.Clear();
+            foreach (var task in sortedTasks)
+            {
+                AllTasks.Add(task);
+            }
+        }
+
+        private void ApplyEmphasisToOverdueTasks()
+        {
+            foreach (var task in AllTasks)
+            {
+                if (task.DueDate <= DateTime.Now)
+                {
+                    // Apply emphasis - replace exclamation mark with warning triangle
+                    task.Title = $"⚠️ {task.Title}";
+                    // Additional styling can be applied here if needed
+                }
+            }
         }
 
         private void UpdateTrafficLightIcon()
         {
-            var now = DateTime.Now;
-            var overdueTasks = _tasks.Any(t => t.DueDate < now);
-            var upcomingTasks = _tasks.Any(t => t.DueDate >= now && t.DueDate <= now.AddDays(5));
-
-            if (overdueTasks)
-            {
-                trafficLightIcon.Source = "red_light.png";
-            }
-            else if (upcomingTasks)
-            {
-                trafficLightIcon.Source = "yellow_light.png";
-            }
-            else
-            {
-                trafficLightIcon.Source = "green_light.png";
-            }
+            // Implementation of traffic light icon update
         }
 
-        private void OnFilterButtonClicked(object sender, EventArgs e) 
-        { 
-            var button = sender as Button; 
-            if (button != null) 
-            { 
-                string filter = button.Text; 
-                
-                switch (filter) 
-                { 
-                    case "Weekly": 
-                        FilterTasksByCategory("Weekly"); 
-                        break; 
-                    case "Monthly": FilterTasksByCategory("Monthly"); 
-                        break; 
-                    case "Yearly": FilterTasksByCategory("Yearly"); 
-                        break; 
-                } 
-            } 
-        }
-
-        private void FilterTasksByCategory(string category) 
-        { 
-            var filteredTasks = _tasks.Where(t => _categories[t.CategoryId] == category).ToList(); 
-            scheduledTasksListView.ItemsSource = filteredTasks; 
-        }
-
-        private void OnTaskTapped(object sender, ItemTappedEventArgs e)
+        private async void OnAddTaskButtonClicked(object sender, EventArgs e)
         {
-            var task = e.Item as Tasks;
+            var result = await DisplayAlert("New Task", "Are you sure you want to add a new task?", "Yes", "No");
+            if (result)
+            {
+                // Deselect any selected item
+                var collectionView = this.FindByName<CollectionView>("TaskCollectionView");
+                if (collectionView.SelectedItem != null)
+                {
+                    collectionView.SelectedItem = null;
+                }
+
+                // Navigate to Task Detail page with a new empty task
+                EditTaskDetail(new Tasks());
+            }
+        }
+
+
+        private void EditTaskDetail(Tasks task)
+        {
+            // Navigate to Task Detail page with the given task
+            Navigation.PushAsync(new TaskDetail(task));
+        }
+
+        private void OnTaskTapped(object sender, SelectionChangedEventArgs e)
+        {
+            // Commenting out the navigation logic
+            /*
+            var selectedTask = e.CurrentSelection.FirstOrDefault() as Tasks;
+            if (selectedTask != null)
+            {
+                // Handle task selection - navigate to task detail page
+                EditTaskDetail(selectedTask);
+            }
+            */
+        }
+
+        private void OnEditTaskSwiped(object sender, EventArgs e)
+        {
+            var swipeItem = sender as SwipeItem;
+            var task = swipeItem?.BindingContext as Tasks;
             if (task != null)
             {
-                // Navigate to TaskDetail page with the selected task
-                Navigation.PushAsync(new TaskDetail(task));
+                EditTaskDetail(task);
             }
-            // Deselect the item
-            ((ListView)sender).SelectedItem = null;
         }
 
-        private void OnScheduleNewTaskButtonClicked(object sender, EventArgs e)
+        private void OnTaskDoubleTappedHandler(Tasks task)
         {
-            // Navigate to schedule new task
-            Navigation.PushAsync(new TaskDetail(new Tasks()));
+            if (task != null)
+            {
+                EditTaskDetail(task);
+            }
         }
-
-        // Other methods...
     }
 }
