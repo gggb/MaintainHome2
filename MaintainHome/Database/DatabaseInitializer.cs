@@ -64,6 +64,160 @@ namespace MaintainHome.Database
             await LoadInitialTaskNote(database);
         }
 
+
+        private static async Task LoadInitialTasks(SQLiteAsyncConnection database)
+        {
+            var tasks = new List<Tasks>
+            {
+                new Tasks
+                {
+                    Title = "Change A/C filter",
+                    Description = "Change the air conditioner filter",
+                    Status = "Pending",
+                    FrequencyDays = 30,
+                    DueDate = DateTime.Today.AddDays(-5),
+                    Priority = 1,
+                    UserId = 1,
+                    CategoryId = 1,
+                    //TaskHelpsId = 1
+                },
+                new Tasks
+                {
+                    Title = "Drain hot-water heater sediment",
+                    Description = "Drain the sediment from the hot-water heater",
+                    Status = "Pending",
+                    FrequencyDays = 180,
+                    DueDate = DateTime.Today.AddDays(-3),
+                    Priority = 2,
+                    UserId = 1,
+                    CategoryId = 2,
+                    //TaskHelpsId = 2
+                },
+                new Tasks
+                {
+                    Title = "Backwash pool filter",
+                    Description = "Backwash the pool filter if the PSI is over 20",
+                    Status = "Pending",
+                    FrequencyDays = 60,
+                    DueDate = DateTime.Today.AddDays(-1),
+                    Priority = 3,
+                    UserId = 1,
+                    CategoryId = 3,
+                    //TaskHelpsId = 3
+                },
+                new Tasks
+                {
+                    Title = "Replace washing machine hoses",
+                    Description = "",
+                    Status = "Pending",
+                    FrequencyDays = 365,
+                    DueDate = DateTime.Today.AddDays(+7),
+                    Priority = 1,
+                    UserId = 1,
+                    CategoryId = 2,
+                    //TaskHelpsId = 4
+                },
+                new Tasks
+                {
+                    Title = "Oil/inspect garage door",
+                    Description = "Oil the wheels of the garage door side reel",
+                    Status = "Pending",
+                    FrequencyDays = 90,
+                    DueDate = DateTime.Today.AddDays(+14),
+                    Priority = 2,
+                    UserId = 1,
+                    CategoryId = 4,
+                    //TaskHelpsId = 5
+                },
+                new Tasks
+                {
+                    Title = "Check bathroom faucets for leaks",
+                    Description = "Replace the seal of the bathroom faucet",
+                    Status = "Pending",
+                    FrequencyDays = 180,
+                    DueDate = DateTime.Today.AddDays(+30),
+                    Priority = 3,
+                    UserId = 1,
+                    CategoryId = 2,
+                    //TaskHelpsId = 6
+                },
+                new Tasks
+                {
+                    Title = "Check Gutters and ensure downspouts aren't blocked",
+                    Description = "Inspect the gutters and ensure the downspouts are not blocked",
+                    Status = "Pending",
+                    FrequencyDays = 30,
+                    DueDate = DateTime.Today.AddDays(+45),
+                    Priority = 1,
+                    UserId = 1,
+                    CategoryId = 5,
+                    //TaskHelpsId = 7
+                },
+                new Tasks
+                {
+                    Title = "Check sprinkler system for broken heads or stuck valves",
+                    Description = "Inspect the sprinkler system for any broken heads or stuck valves",
+                    Status = "Pending",
+                    FrequencyDays = 90,
+                    DueDate = DateTime.Today.AddDays(+60),
+                    Priority = 2,
+                    UserId = 1,
+                    CategoryId = 6,
+                    //TaskHelpsId = 8
+                }
+            };
+
+            var tasksRepository = new TasksRepository();
+
+            foreach (var task in tasks)
+            {
+                var result = await tasksRepository.AddTaskAsync(task);
+                if (!result)
+                {
+                    Console.WriteLine($"Failed to add task: {task.Title}");
+                }
+            }
+            //Validate
+            var tsks = await database.Table<Tasks>().ToListAsync();
+            Console.WriteLine($"************************Task Load");
+            foreach (var tsk in tsks)
+            {
+                Console.WriteLine($"***********Id: {tsk.Id}, Title: {tsk.Title}, Descr: {tsk.Description}, Status: {tsk.Status}, Freq: {tsk.FrequencyDays}, DueDate: {tsk.DueDate}, Pri: {tsk.Priority}, User: {tsk.UserId}, Category: {tsk.CategoryId},");
+            }
+        }
+
+        private static async Task LoadInitialTaskActivity(SQLiteAsyncConnection database)
+        {
+            var taskActivities = new List<TaskActivity>
+            {
+                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Fair", Action = "Maintenance", TimeSpent = .5m, Notes = "Everything is in order."},
+                new TaskActivity {TaskId = 2, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
+                new TaskActivity {TaskId = 3, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
+                new TaskActivity {TaskId = 4, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
+                new TaskActivity {TaskId = 5, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
+                new TaskActivity {TaskId = 6, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Seals were leaking"},
+                new TaskActivity {TaskId = 7, Status = "In progress",   Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Leaves were starting to accumulate..."},
+                new TaskActivity {TaskId = 8, Status = "Pending", Condition = "Poor", Action = "Inspection", TimeSpent = 1, Notes = ""}
+            };
+
+            var taskActivityRepository = new TaskActivityRepository();
+            foreach (var taskActivity in taskActivities)
+            {
+                var existingTaskActivity = await taskActivityRepository.GetTaskActivityAsync(taskActivity.TaskId);
+                if (existingTaskActivity == null)
+                {
+                    await taskActivityRepository.AddTaskActivity(taskActivity);
+                }
+            }
+            //Validate
+            Console.WriteLine($"************************TaskActivity Load");
+            var tas = await database.Table<TaskActivity>().ToListAsync();
+            foreach (var ta in tas)
+            {
+                Console.WriteLine($"***********Id: {ta.Id}, TaskId: {ta.TaskId}, Status: {ta.Status}, Condition: {ta.Condition}, Action: {ta.Action}, Duration: {ta.TimeSpent}, Notes: {ta.Notes}");
+            }
+        }
+
         private static async Task LoadInitialPartBuy(SQLiteAsyncConnection database)
         {
             var partBuys = new List<PartBuy>
@@ -223,160 +377,7 @@ namespace MaintainHome.Database
             }
           
         }
-
-        private static async Task LoadInitialTasks(SQLiteAsyncConnection database)
-        {
-            var tasks = new List<Tasks>
-            {
-                new Tasks
-                {
-                    Title = "Change A/C filter",
-                    Description = "Change the air conditioner filter",
-                    Status = "Pending",
-                    FrequencyDays = 30,
-                    DueDate = DateTime.Parse("2023-11-25"),
-                    Priority = 1,
-                    UserId = 1,
-                    CategoryId = 1,
-                    //TaskHelpsId = 1
-                },
-                new Tasks
-                {
-                    Title = "Drain hot-water heater sediment",
-                    Description = "Drain the sediment from the hot-water heater",
-                    Status = "Pending",
-                    FrequencyDays = 180,
-                    DueDate = DateTime.Parse("2023-11-20"),
-                    Priority = 2,
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 2
-                },
-                new Tasks
-                {
-                    Title = "Backwash pool filter",
-                    Description = "Backwash the pool filter if the PSI is over 20",
-                    Status = "Pending",
-                    FrequencyDays = 60,
-                    DueDate = DateTime.Parse("2023-11-15"),
-                    Priority = 3,
-                    UserId = 1,
-                    CategoryId = 3,
-                    //TaskHelpsId = 3
-                },
-                new Tasks
-                {
-                    Title = "Replace washing machine hoses",
-                    Description = "",
-                    Status = "Pending",
-                    FrequencyDays = 365,
-                    DueDate = DateTime.Parse("2023-12-05"),
-                    Priority = 1,
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 4
-                },
-                new Tasks
-                {
-                    Title = "Oil/inspect garage door",
-                    Description = "Oil the wheels of the garage door side reel",
-                    Status = "Pending",
-                    FrequencyDays = 90,
-                    DueDate = DateTime.Parse("2023-12-10"),
-                    Priority = 2,
-                    UserId = 1,
-                    CategoryId = 4,
-                    //TaskHelpsId = 5
-                },
-                new Tasks
-                {
-                    Title = "Check bathroom faucets for leaks",
-                    Description = "Replace the seal of the bathroom faucet",
-                    Status = "Pending",
-                    FrequencyDays = 180,
-                    DueDate = DateTime.Parse("2023-12-15"),
-                    Priority = 3,
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 6
-                },
-                new Tasks
-                {
-                    Title = "Check Gutters and ensure downspouts aren't blocked",
-                    Description = "Inspect the gutters and ensure the downspouts are not blocked",
-                    Status = "Pending",
-                    FrequencyDays = 30,
-                    DueDate = DateTime.Parse("2023-12-20"),
-                    Priority = 1,
-                    UserId = 1,
-                    CategoryId = 5,
-                    //TaskHelpsId = 7
-                },
-                new Tasks
-                {
-                    Title = "Check sprinkler system for broken heads or stuck valves",
-                    Description = "Inspect the sprinkler system for any broken heads or stuck valves",
-                    Status = "Pending",
-                    FrequencyDays = 90,
-                    DueDate = DateTime.Parse("2023-12-25"),
-                    Priority = 2,
-                    UserId = 1,
-                    CategoryId = 6,
-                    //TaskHelpsId = 8
-                }
-            };  
-
-            var tasksRepository = new TasksRepository();
-
-            foreach (var task in tasks)
-            {
-                var result = await tasksRepository.AddTaskAsync(task);
-                if (!result)
-                {
-                    Console.WriteLine($"Failed to add task: {task.Title}");
-                }
-            }
-            //Validate
-            var tsks = await database.Table<Tasks>().ToListAsync();
-            Console.WriteLine($"************************Task Load");
-            foreach (var tsk in tsks)
-            {
-                Console.WriteLine($"***********Id: {tsk.Id}, Title: {tsk.Title}, Descr: {tsk.Description}, Status: {tsk.Status}, Freq: {tsk.FrequencyDays}, DueDate: {tsk.DueDate}, Pri: {tsk.Priority}, User: {tsk.UserId}, Category: {tsk.CategoryId},");
-            }
-        }
         
-        private static async Task LoadInitialTaskActivity(SQLiteAsyncConnection database)
-        {
-            var taskActivities = new List<TaskActivity>
-            {
-                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Fair", Action = "Maintenance", TimeSpent = .5m, Notes = "Everything is in order."},
-                new TaskActivity {TaskId = 2, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
-                new TaskActivity {TaskId = 3, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
-                new TaskActivity {TaskId = 4, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
-                new TaskActivity {TaskId = 5, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
-                new TaskActivity {TaskId = 6, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Seals were leaking"},
-                new TaskActivity {TaskId = 7, Status = "In progress",   Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Leaves were starting to accumulate..."},
-                new TaskActivity {TaskId = 8, Status = "Pending", Condition = "Poor", Action = "Inspection", TimeSpent = 1, Notes = ""}
-            };
-
-            var taskActivityRepository = new TaskActivityRepository();
-            foreach (var taskActivity in taskActivities)
-            {
-                var existingTaskActivity = await taskActivityRepository.GetTaskActivityAsync(taskActivity.TaskId);
-                if (existingTaskActivity == null)
-                {
-                    await taskActivityRepository.AddTaskActivity(taskActivity);
-                }
-            }
-            //Validate
-            Console.WriteLine($"************************TaskActivity Load");
-            var tas = await database.Table<TaskActivity>().ToListAsync();
-            foreach (var ta in tas)
-            {
-                Console.WriteLine($"***********Id: {ta.Id}, TaskId: {ta.TaskId}, Status: {ta.Status}, Condition: {ta.Condition}, Action: {ta.Action}, Duration: {ta.TimeSpent}, Notes: {ta.Notes}");
-            }
-        }
-
         private static async Task LoadInitialNotification(SQLiteAsyncConnection database)
         {
             var notifications = new List<MaintainHome.Models.Notification>

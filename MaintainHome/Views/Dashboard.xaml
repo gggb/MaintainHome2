@@ -1,48 +1,58 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MaintainHome.Views.Dashboard"
+             x:Name="DashboardPage"
              Title="Dashboard">
 
-    <StackLayout Padding="10">
+    <ContentPage.Content>
+        <StackLayout>
 
-        <!-- Traffic Light Icon -->
-        <Image x:Name="trafficLightIcon" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center"/>
+            <!-- Header Label -->
+            <Label Text="Maintenance Tasks"
+                   HorizontalOptions="Center"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0, 0, 0, 00" />
+            <Label Text="⚠️ indicates overdue tasks"
+                   HorizontalOptions="Center"
+                   FontSize="14"
+                   TextColor="Gray"
+                   Margin="0, -5, 0, 20" />
 
-        <!-- Filter Buttons -->
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-            <Button Text="Weekly" Clicked="OnFilterButtonClicked" />
-            <Button Text="Monthly" Clicked="OnFilterButtonClicked" />
-            <Button Text="Yearly" Clicked="OnFilterButtonClicked" />
+            <!-- CollectionView for tasks -->
+            <CollectionView x:Name="TaskCollectionView" ItemsSource="{Binding AllTasks}" SelectionMode="Single" SelectionChanged="OnTaskTapped">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Edit" Invoked="OnEditTaskSwiped" BackgroundColor="LightGray"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <StackLayout Margin="10,5">
+                                <Label Text="{Binding Title}" MaxLines="1" FontSize="Medium" TextColor="Black">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" 
+                                            Command="{Binding Source={x:Reference DashboardPage}, Path=BindingContext.OnTaskDoubleTapped}" 
+                                            CommandParameter="{Binding .}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Label Text="{Binding DueDate, StringFormat='{0:MM/dd/yyyy}'}" FontSize="Small" TextColor="Gray"/>
+                            </StackLayout>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Note about Overdue Tasks -->
+           
+
+            <!-- Button at the Bottom -->
+            <Button Text="Schedule New Task"
+                    HorizontalOptions="Center"
+                    VerticalOptions="EndAndExpand"
+                    Clicked="OnAddTaskButtonClicked"
+                    Margin="0, 20, 0, 10"/>
         </StackLayout>
-
-        <!-- Overdue Task List -->
-        <Label Text="Overdue Tasks" FontAttributes="Bold" Margin="10, 5"/>
-        <ListView x:Name="overdueTasksListView" ItemTapped="OnTaskTapped">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding Title}" Detail="{Binding DueDate}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-        <!-- Scheduled Task List -->
-        <Label Text="Scheduled Tasks" FontAttributes="Bold" Margin="10, 5"/>
-        <ListView x:Name="scheduledTasksListView" ItemTapped="OnTaskTapped">
-            <ListView.GroupHeaderTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding Category}" />
-                </DataTemplate>
-            </ListView.GroupHeaderTemplate>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding Title}" Detail="{Binding DueDate}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-
-        <!-- Schedule New Task Button -->
-        <Button Text="Schedule New Task" Clicked="OnScheduleNewTaskButtonClicked" HorizontalOptions="Center"/>
-
-    </StackLayout>
+    </ContentPage.Content>
 </ContentPage>
