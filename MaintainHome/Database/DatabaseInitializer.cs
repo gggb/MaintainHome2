@@ -337,7 +337,7 @@ namespace MaintainHome.Database
             }
             //Validate
             var tsks = await database.Table<Tasks>().ToListAsync();
-            Console.WriteLine($"************************Task Load");
+            Console.WriteLine($"***********************Task Load");
             foreach (var tsk in tsks)
             {
                 Console.WriteLine($"***********Id: {tsk.Id}, Title: {tsk.Title}, Descr: {tsk.Description}, Status: {tsk.Status}, Freq: {tsk.FrequencyDays}, DueDate: {tsk.DueDate}, Pri: {tsk.Priority}, User: {tsk.UserId}, Category: {tsk.CategoryId},");
