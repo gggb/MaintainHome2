@@ -2,7 +2,7 @@ using MaintainHome.Models;
 using MaintainHome.Database;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace MaintainHome.Views
@@ -78,7 +78,7 @@ namespace MaintainHome.Views
         {
             foreach (var task in AllTasks)
             {
-                if (task.DueDate <= DateTime.Now)
+                if (task.DueDate <= DateTime.Now && !task.Title.Contains("⚠️"))
                 {
                     // Apply emphasis - replace exclamation mark with warning triangle
                     task.Title = $"⚠️ {task.Title}";
@@ -113,6 +113,7 @@ namespace MaintainHome.Views
         private void EditTaskDetail(Tasks task)
         {
             // Navigate to Task Detail page with the given task
+            Debug.WriteLine("Navigating to TaskDetail page with task: " + task.Title);
             Navigation.PushAsync(new TaskDetail(task));
         }
 
