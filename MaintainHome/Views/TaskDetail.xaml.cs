@@ -31,10 +31,13 @@ namespace MaintainHome.Views
             }
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
             Debug.WriteLine("TaskDetail Page Appearing");
+
+            // Load TaskActivityControl with the taskId
+            await TaskActivityControl.LoadTaskActivities(_task.Id);
         }
 
         protected override void OnDisappearing()

@@ -1,9 +1,13 @@
-namespace MaintainHome.Views;
+using MaintainHome.Models;
 
-public partial class TaskActivityDetail : ContentPage
+namespace MaintainHome.Views
 {
-	public TaskActivityDetail()
-	{
-		InitializeComponent();
-	}
+    public partial class TaskActivityDetail : ContentPage
+    {
+        public TaskActivityDetail()
+        {
+            InitializeComponent();
+            BindingContext = new TaskActivity(); // Assuming you have a TaskActivityViewModel
+        }
+    }
 }

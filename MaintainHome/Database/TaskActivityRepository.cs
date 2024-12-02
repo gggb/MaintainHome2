@@ -29,6 +29,12 @@ namespace MaintainHome.Database
             return await _database.FindAsync<TaskActivity>(taskActivityId);
         }
 
+        // Read (Get) all TaskActivities for a specific Task ID
+        public async Task<List<TaskActivity>> GetTaskActivitiesAsyncByTaskId(int taskId)
+        {
+            return await _database.Table<TaskActivity>().Where(t => t.TaskId == taskId).ToListAsync();
+        }
+
         // Update TaskActivity
         public async Task<bool> UpdateTaskActivityAsync(TaskActivity taskActivity)
         {

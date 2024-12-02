@@ -190,8 +190,9 @@ namespace MaintainHome.Database
         {
             var taskActivities = new List<TaskActivity>
             {
-                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Fair", Action = "Maintenance", TimeSpent = .5m, Notes = "Everything is in order."},
-                new TaskActivity {TaskId = 2, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
+                new TaskActivity {TaskId = 1, Status = "In Progress", Condition = "Fair", Action = "Filter replacement failed!", TimeSpent = .5m, Notes = "Filter was the wrong size, 20 x 20 x 4. Should have been 20 x 25 x 4."},
+                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Fair", Action = "Replaced Filter", TimeSpent = .5m, Notes = "Not too dirty but needed changing. Everything is in order."},
+                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
                 new TaskActivity {TaskId = 3, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
                 new TaskActivity {TaskId = 4, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
                 new TaskActivity {TaskId = 5, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
@@ -202,12 +203,8 @@ namespace MaintainHome.Database
 
             var taskActivityRepository = new TaskActivityRepository();
             foreach (var taskActivity in taskActivities)
-            {
-                var existingTaskActivity = await taskActivityRepository.GetTaskActivityAsync(taskActivity.TaskId);
-                if (existingTaskActivity == null)
-                {
-                    await taskActivityRepository.AddTaskActivity(taskActivity);
-                }
+            {               
+                    await taskActivityRepository.AddTaskActivity(taskActivity);               
             }
             //Validate
             Console.WriteLine($"************************TaskActivity Load");

@@ -1,64 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:MaintainHome.Controls"
              x:Class="MaintainHome.Views.TaskDetail"
              Title="Task Detail">
+
+
     <ScrollView>
         <VerticalStackLayout Padding="10,0,10,0">
             <!-- Section heading -->
             <Label Text="Basic Task Detail" 
-                   FontSize="Medium" Margin="0,0,0,10"
-                   TextDecorations="Underline" 
-                   HorizontalOptions="Start" />
+               FontSize="Medium" Margin="0,0,0,10"
+               TextDecorations="Underline" 
+               HorizontalOptions="Start" />
+
+            <!-- Title -->
+            <HorizontalStackLayout Margin="15,-5,0,10">
+                <Label Text="Title:" FontSize="Medium"/>
+                <Entry Text="{Binding Title}" WidthRequest="300" Margin="0,-10,0,0" />
+            </HorizontalStackLayout>
+
+            <!-- Description -->
+            <HorizontalStackLayout Margin="15,-15,0,-3">
+                <Label Text="Description:" FontSize="Medium"/>
+            </HorizontalStackLayout>
+            <Frame BorderColor="Gray" CornerRadius="5" Padding="5" Margin="15,-0">
+                <Editor x:Name="DescriptionEditor" Text="{Binding Description}" HeightRequest="60" AutoSize="TextChanges" Margin="0,-10"/>
+            </Frame>
 
             <!-- Category and Due Date -->
-            <FlexLayout Direction="Row" AlignItems="Center" Margin="5,0,0,5" Wrap="NoWrap">
+            <FlexLayout Direction="Row" AlignItems="Center" Margin="15,10,0,5" Wrap="NoWrap">
                 <Label Text="Category: " FontSize="Medium" Margin="0,0,0,0"/>
                 <Label Text="{Binding CategoryId}" FontSize="Small" TextDecorations="Underline" />
                 <Label Text="Due Date:" FontSize="Medium" Margin="15,0,0,0" />
                 <DatePicker x:Name="DueDateDatePicker" Date="{Binding DueDate}" FontSize="Small" WidthRequest="120" Margin="0,0,0,0" />
             </FlexLayout>
 
-
-            <!-- Title -->
-            <HorizontalStackLayout Margin="5,5,0,10">
-                <Label Text="Title:" FontSize="Medium"/>
-                <Entry Text="{Binding Title}" WidthRequest="300" Margin="0,-10,0,0" />
-            </HorizontalStackLayout>
-
             <!-- Frequency -->
-            <HorizontalStackLayout Margin="5,-5,0,-10">
+            <HorizontalStackLayout Margin="15,10,0,0">
                 <Label Text="Freq Days:" FontSize="Medium" />
                 <Entry Text="{Binding FrequencyDays}" WidthRequest="40" Margin="0,-7,0,0"/>
                 <Label Text="Pri:" FontSize="Medium" Margin="-5,1,0,0"/>
-                <Picker x:Name="PriorityPicker" Title="Medium" Margin="3,-5,7,0"
-                        SelectedItem="{Binding Priority}" 
-                         />
+                <Picker x:Name="PriorityPicker" Title="Medium" Margin="3,-7,7,0"
+                    SelectedItem="{Binding Priority}" 
+                     />
                 <Label Text="  Status:" FontSize="Medium" Margin="-10,1,0,0" />
                 <Picker x:Name="StatusPicker" Title="Complete" Margin="5,-7,0,0"
-                        SelectedItem="{Binding Status}" 
-                        WidthRequest="200" />
+                    SelectedItem="{Binding Status}" 
+                    WidthRequest="200" />
             </HorizontalStackLayout>
 
+            <!-- Task Activities -->
+            <!-- Task Activities -->
+            <toolkit:Expander>
+                <toolkit:Expander.Header>
+                    <Label Text="Task Activities" FontSize="Medium" />
+                </toolkit:Expander.Header>
+                <controls:DetailPageControl x:Name="TaskActivityControl" Title="Task Activity List"/>
+            </toolkit:Expander>
             
-            <!-- Description -->
-            <HorizontalStackLayout Margin="5,10,0,-3">
-                <Label Text="Description:" FontSize="Medium"/>
-            </HorizontalStackLayout>
-            <Editor Text="{Binding Description}" 
-                    HeightRequest="75" 
-                    Margin="15,-10" />
-
-            <!-- Task Activity List 
-            <Label Text="Task Activity" FontSize="Medium" TextDecorations="Underline" HorizontalOptions="Start" />
-            <CollectionView x:Name="TaskActivityCollectionView" ItemsSource="{Binding TaskActivities}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <TextCell Text="{Binding Status}" Detail="{Binding Action}" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-            <Button Text="Add/Edit/Delete Task Activity" Clicked="OnTaskActivityAction" /> -->
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

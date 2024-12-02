@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MaintainHome.Controls.DetailPageControl"
+             x:Name="DetailControl">
+
+    <StackLayout Padding="20">                    
+        <Label Text="{Binding Title, Source={x:Reference DetailControl}}" 
+               FontSize="Medium" 
+               HorizontalOptions="Center"/>
+        <HorizontalStackLayout>
+            <Label Text="Status" TextDecorations="Underline" Margin="15,0,0,0"></Label>
+            <Label Text="Action" TextDecorations="Underline" Margin="65,0,0,0"></Label>
+        </HorizontalStackLayout>
+
+        <!-- Items CollectionView -->
+        <CollectionView x:Name="ItemsCollectionView" Margin="0,0,0,0"
+                        ItemsSource="{Binding ItemsSource, Source={x:Reference DetailControl}}" 
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedItem, Source={x:Reference DetailControl}}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Orientation="Horizontal" Padding="0">
+                        <Label Text="{Binding Status}" FontSize="16" Margin="0,0,0,0"/>
+                        <Label Text="{Binding Action}" FontSize="16" TextColor="Blue" Margin="15,0,0,0" MaxLines="1"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Detail Fields Stack -->
+        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="15,50,15,10">
+            <StackLayout x:Name="DetailStack">
+                <Label Text="View/Edit Task Activity" FontSize="Medium" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                <HorizontalStackLayout>
+                    <Label Text="Action:" FontSize="Small"/>
+                    <Entry Text="{Binding SelectedItem.Action, Source={x:Reference DetailControl}}" Margin="5,-12,0,0"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Margin="0,0,0,0">
+                    <Label Text="Status:" FontSize="Small"/>
+                    <Entry Text="{Binding SelectedItem.Status, Source={x:Reference DetailControl}}" Margin="5,-12,0,0" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Margin="0,0,0,0">
+                    <Label Text="Condition:" FontSize="Small"/>
+                    <Entry Text="{Binding SelectedItem.Condition, Source={x:Reference DetailControl}}" Margin="0,-12,0,0"/>
+                    <Label Text="Time Spent:" FontSize="Small" Margin="20,0,0,0"/>
+                    <Entry Text="{Binding SelectedItem.TimeSpent, Source={x:Reference DetailControl}}" Keyboard="Numeric" Margin="0,-12,0,0"/>
+                </HorizontalStackLayout>
+                <Label Text="Notes:" FontSize="Small" Margin="0,-5,0,0"/>
+                <Frame BorderColor="Gray" CornerRadius="5" Padding="5" Margin="15,-0">
+                    <Editor Text="{Binding SelectedItem.Notes, Source={x:Reference DetailControl}}" HeightRequest="60" AutoSize="TextChanges" Margin="0,-10"/>
+                </Frame>
+
+                <!-- Buttons Section -->
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20" Margin="15,25,15,10">
+                    <Button Text="Add" Clicked="OnNewButtonClicked"/>
+                    <Button Text="Save" Clicked="OnSaveButtonClicked"/>
+                    <Button Text="Delete" Clicked="OnDeleteButtonClicked"/>
+                </StackLayout>
+            </StackLayout>
+        </Frame>
+    </StackLayout>
+</ContentView>
