@@ -6,15 +6,15 @@
              x:Name="NotifyControl">
 
     <!-- Notifications Title-->
-    <StackLayout Padding="20">
+    <StackLayout Padding="20,5,0,0">
         <Label Text="{Binding Title, Source={x:Reference NotifyControl}}" 
-               FontSize="Medium" 
+               FontFamily="RobotoRegular" FontSize="Medium" 
                HorizontalOptions="Center"/>
 
         <!-- Notification List Headers -->
         <HorizontalStackLayout>
-            <Label Text="Name" TextDecorations="Underline" Margin="15,0,0,0"></Label>
-            <Label Text="Message" TextDecorations="Underline" Margin="75,0,0,0"></Label>
+            <Label Text="Name" FontFamily="RobotoRegular" FontSize="15" TextDecorations="Underline" Margin="15,0,0,0"></Label>
+            <Label Text="Message" FontFamily="RobotoRegular" FontSize="15" TextDecorations="Underline" Margin="75,0,0,0"></Label>
         </HorizontalStackLayout>
 
         <!-- Notifications List (Items CollectionView) -->
@@ -26,30 +26,31 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout Orientation="Horizontal" Padding="0">
-                        <Label Text="{Binding TargetName}" FontSize="16" Margin="0,0,0,0"/>
-                        <Label Text="{Binding Message}" FontSize="16" TextColor="Blue" Margin="15,0,0,0" MaxLines="1"/>
+                        <Label Text="{Binding TargetName}" FontFamily="RobotoRegular" FontSize="15"  Margin="0,0,0,0"/>
+                        <Label Text="{Binding Message}" FontFamily="RobotoRegular" FontSize="15"  TextColor="Blue" Margin="15,0,0,0" MaxLines="1"/>
                     </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
         <!-- Detail Fields Stack -->
-        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="15,20,15,10">
+        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="15,10,15,10">
             <StackLayout x:Name="DetailStack">
                 <Label x:Name="SectionTitleLabel" 
                        Text="{Binding SectionTitle, Source={x:Reference NotifyControl}}" 
-                       FontSize="Medium" 
+                       FontFamily="RobotoRegular" FontSize="Medium"  
                        HorizontalOptions="Center" 
-                       Margin="0,0,0,10"/>
+                       Margin="0,-6,0,0"/>
                 <HorizontalStackLayout>
-                    <Label Text="Name:" FontSize="Small"/>
-                    <Entry Text="{Binding SelectedItem.TargetName, Source={x:Reference NotifyControl}}" Margin="5,-12,0,0"/>
+                    <Label Text="Name:" FontSize="Small" Margin="0,5,0,0"/>
+                    <Entry Text="{Binding SelectedItem.TargetName, Source={x:Reference NotifyControl}}" 
+                           FontFamily="RobotoRegular" FontSize="15" Margin="5,-7,0,0"/>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Margin="0,0,0,0">
-                    <Label Text="Email:" FontSize="Small"/>
+                    <Label Text="Email:" FontFamily="RobotoRegular" FontSize="15" Margin="0,-7,0,0" />
                     <Entry Text="{Binding SelectedItem.TargetEmail, 
                            Source={x:Reference NotifyControl}}" 
-                           Margin="5,-12,0,0"
+                           Margin="5,-19,0,0" FontFamily="RobotoRegular" FontSize="15" 
                            Placeholder="Enter email address" 
                            Keyboard="Email">
                         <Entry.Behaviors>
@@ -58,10 +59,10 @@
                     </Entry>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Margin="0,0,0,0">
-                    <Label Text="Phone:" FontSize="Small"/>
+                    <Label Text="Phone:" FontFamily="RobotoRegular" FontSize="15" Margin="0,-5,0,0"/>
                     <Entry Text="{Binding SelectedItem.TargetPhone, 
                            Source={x:Reference NotifyControl}}" 
-                           Margin="0,-12,0,0"
+                           Margin="0,-17,0,0" FontFamily="RobotoRegular" FontSize="15" 
                            Placeholder="(###) ###-####" 
                            Keyboard="Telephone">
                         <Entry.Behaviors>
@@ -69,24 +70,25 @@
                         </Entry.Behaviors>
                     </Entry>
                 </HorizontalStackLayout>
-                <Label Text="Message:" FontSize="Small" Margin="0,-5,0,0"/>
+                <Label Text="Message:" FontFamily="RobotoRegular" FontSize="15"  Margin="0,-8,0,0"/>
                 <Frame BorderColor="Gray" CornerRadius="5" Padding="5" Margin="15,-0">
                     <ScrollView>
-                        <Editor Text="{Binding SelectedItem.Message, Source={x:Reference NotifyControl}}" HeightRequest="75" Margin="0,-10"/>
+                        <Editor Text="{Binding SelectedItem.Message, Source={x:Reference NotifyControl}}" 
+                                HeightRequest="75" FontFamily="RobotoRegular" FontSize="15" Margin="0,-10"/>
                     </ScrollView>
                 </Frame>
 
                 <!-- Buttons Section -->
-                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20" Margin="15,25,15,10">
-                    <Button Text="Add" 
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20" Margin="15,10,15,0">
+                    <Button Text="Add" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnNewButtonClicked" 
                             IsVisible="{Binding IsAddVisible, Source={x:Reference NotifyControl}}"/>
-                    <Button Text="Save" 
+                    <Button Text="Save" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnSaveButtonClicked"/>
-                    <Button Text="Delete" 
+                    <Button Text="Delete" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnDeleteButtonClicked" 
                             IsVisible="{Binding IsDeleteVisible, Source={x:Reference NotifyControl}}"/>
-                    <Button Text="Cancel" 
+                    <Button Text="Cancel" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnCancelButtonClicked" 
                             IsVisible="{Binding IsCancelVisible, Source={x:Reference NotifyControl}}"/>
                 </StackLayout>
