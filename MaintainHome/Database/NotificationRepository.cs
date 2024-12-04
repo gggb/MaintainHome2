@@ -23,6 +23,15 @@ namespace MaintainHome.Database
             return await _database.InsertAsync(notification) > 0;
         }
 
+        // Read (Get) all Notifications for a specific Task ID
+        public async Task<List<Notification>> GetNotificationsAsyncByTaskId(int taskId)
+        {
+            return await _database.Table<Notification>().Where(t => t.TaskId == taskId).ToListAsync();
+        }
+
+
+
+
         // Read (Get) Notification by ID
         public async Task<Notification> GetNotificationAsync(int notificationId)
         {

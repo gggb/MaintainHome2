@@ -16,8 +16,9 @@
         <!-- Items CollectionView -->
         <CollectionView x:Name="ItemsCollectionView" Margin="0,0,0,0"
                         ItemsSource="{Binding ItemsSource, Source={x:Reference DetailControl}}" 
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedItem, Source={x:Reference DetailControl}}">
+                        SelectionMode="{Binding CollectionSelectionMode, Source={x:Reference DetailControl}}"
+                        SelectedItem="{Binding SelectedItem, Source={x:Reference DetailControl}}"
+                        SelectionChanged="OnSelectionChanged">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout Orientation="Horizontal" Padding="0">
@@ -29,34 +30,51 @@
         </CollectionView>
 
         <!-- Detail Fields Stack -->
-        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="15,50,15,10">
+        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="15,20,15,10">
             <StackLayout x:Name="DetailStack">
-                <Label Text="View/Edit Task Activity" FontSize="Medium" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                <Label x:Name="SectionTitleLabel" 
+                       Text="{Binding SectionTitle, Source={x:Reference DetailControl}}" 
+                       FontSize="Medium" 
+                       HorizontalOptions="Center" 
+                       Margin="0,0,0,10"/>
                 <HorizontalStackLayout>
                     <Label Text="Action:" FontSize="Small"/>
                     <Entry Text="{Binding SelectedItem.Action, Source={x:Reference DetailControl}}" Margin="5,-12,0,0"/>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Margin="0,0,0,0">
                     <Label Text="Status:" FontSize="Small"/>
-                    <Entry Text="{Binding SelectedItem.Status, Source={x:Reference DetailControl}}" Margin="5,-12,0,0" />
+                    <Picker ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedItem.Status}" Margin="5,-12,0,0" />
                 </HorizontalStackLayout>
+                
                 <HorizontalStackLayout Margin="0,0,0,0">
                     <Label Text="Condition:" FontSize="Small"/>
-                    <Entry Text="{Binding SelectedItem.Condition, Source={x:Reference DetailControl}}" Margin="0,-12,0,0"/>
+                    <Picker ItemsSource="{Binding ConditionOptions}" SelectedItem="{Binding SelectedItem.Condition}" Margin="0,-12,0,0"/>
                     <Label Text="Time Spent:" FontSize="Small" Margin="20,0,0,0"/>
                     <Entry Text="{Binding SelectedItem.TimeSpent, Source={x:Reference DetailControl}}" Keyboard="Numeric" Margin="0,-12,0,0"/>
                 </HorizontalStackLayout>
+                
                 <Label Text="Notes:" FontSize="Small" Margin="0,-5,0,0"/>
                 <Frame BorderColor="Gray" CornerRadius="5" Padding="5" Margin="15,-0">
-                    <Editor Text="{Binding SelectedItem.Notes, Source={x:Reference DetailControl}}" HeightRequest="60" AutoSize="TextChanges" Margin="0,-10"/>
+                    <ScrollView>
+                        <Editor Text="{Binding SelectedItem.Notes, Source={x:Reference DetailControl}}" HeightRequest="75" Margin="0,-10"/>
+                    </ScrollView>
                 </Frame>
 
                 <!-- Buttons Section -->
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20" Margin="15,25,15,10">
-                    <Button Text="Add" Clicked="OnNewButtonClicked"/>
-                    <Button Text="Save" Clicked="OnSaveButtonClicked"/>
-                    <Button Text="Delete" Clicked="OnDeleteButtonClicked"/>
+                    <Button Text="Add" 
+                            Clicked="OnNewButtonClicked" 
+                            IsVisible="{Binding IsAddVisible, Source={x:Reference DetailControl}}"/>
+                    <Button Text="Save" 
+                            Clicked="OnSaveButtonClicked"/>
+                    <Button Text="Delete" 
+                            Clicked="OnDeleteButtonClicked" 
+                            IsVisible="{Binding IsDeleteVisible, Source={x:Reference DetailControl}}"/>
+                    <Button Text="Cancel" 
+                            Clicked="OnCancelButtonClicked" 
+                            IsVisible="{Binding IsCancelVisible, Source={x:Reference DetailControl}}"/> 
                 </StackLayout>
+
             </StackLayout>
         </Frame>
     </StackLayout>

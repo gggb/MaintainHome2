@@ -30,8 +30,8 @@ namespace MaintainHome.Behaviors
 
         void OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var entry = sender as Entry; var cursorPosition = entry.CursorPosition; // Save the current cursor position
-            var phoneNumber = e.NewTextValue;
+            var entry = sender as Entry;
+            var phoneNumber = e.NewTextValue ?? string.Empty; // Ensure phoneNumber is not null
 
             // Remove all non-numeric characters
             phoneNumber = Regex.Replace(phoneNumber, @"[^\d]", "");
@@ -41,8 +41,6 @@ namespace MaintainHome.Behaviors
             {
                 phoneNumber = phoneNumber.Substring(0, 10);
             }
-
-
 
             // Format the phone number
             if (phoneNumber.Length > 0)

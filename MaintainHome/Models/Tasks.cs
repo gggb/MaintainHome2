@@ -24,7 +24,7 @@ namespace MaintainHome.Models
         public string? Status { get; set; }
         public int FrequencyDays { get; set; }
         public DateTime DueDate { get; set; }
-        public int Priority { get; set; }
+        public String Priority { get; set; }
         [Indexed] public int UserId { get; set; }
         [Indexed] public int CategoryId { get; set; }
         //[Indexed] public int TaskHelpsId { get; set; }

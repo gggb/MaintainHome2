@@ -76,7 +76,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 30,
                     DueDate = DateTime.Today.AddDays(-5),
-                    Priority = 1,
+                    Priority = "Medium",
                     UserId = 1,
                     CategoryId = 1,
                     //TaskHelpsId = 1
@@ -88,7 +88,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 180,
                     DueDate = DateTime.Today.AddDays(-3),
-                    Priority = 2,
+                    Priority = "Low",
                     UserId = 1,
                     CategoryId = 2,
                     //TaskHelpsId = 2
@@ -100,7 +100,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 60,
                     DueDate = DateTime.Today.AddDays(-1),
-                    Priority = 3,
+                    Priority = "Med",
                     UserId = 1,
                     CategoryId = 3,
                     //TaskHelpsId = 3
@@ -112,7 +112,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 365,
                     DueDate = DateTime.Today.AddDays(+7),
-                    Priority = 1,
+                    Priority = "Medium",
                     UserId = 1,
                     CategoryId = 2,
                     //TaskHelpsId = 4
@@ -124,7 +124,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 90,
                     DueDate = DateTime.Today.AddDays(+14),
-                    Priority = 2,
+                    Priority = "Low",
                     UserId = 1,
                     CategoryId = 4,
                     //TaskHelpsId = 5
@@ -136,7 +136,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 180,
                     DueDate = DateTime.Today.AddDays(+30),
-                    Priority = 3,
+                    Priority = "Low",
                     UserId = 1,
                     CategoryId = 2,
                     //TaskHelpsId = 6
@@ -148,7 +148,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 30,
                     DueDate = DateTime.Today.AddDays(+45),
-                    Priority = 1,
+                    Priority = "Low",
                     UserId = 1,
                     CategoryId = 5,
                     //TaskHelpsId = 7
@@ -160,7 +160,7 @@ namespace MaintainHome.Database
                     Status = "Pending",
                     FrequencyDays = 90,
                     DueDate = DateTime.Today.AddDays(+60),
-                    Priority = 2,
+                    Priority = "Urgent",
                     UserId = 1,
                     CategoryId = 6,
                     //TaskHelpsId = 8
@@ -190,14 +190,14 @@ namespace MaintainHome.Database
         {
             var taskActivities = new List<TaskActivity>
             {
-                new TaskActivity {TaskId = 1, Status = "In Progress", Condition = "Fair", Action = "Filter replacement failed!", TimeSpent = .5m, Notes = "Filter was the wrong size, 20 x 20 x 4. Should have been 20 x 25 x 4."},
-                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Fair", Action = "Replaced Filter", TimeSpent = .5m, Notes = "Not too dirty but needed changing. Everything is in order."},
-                new TaskActivity {TaskId = 1, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
-                new TaskActivity {TaskId = 3, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
-                new TaskActivity {TaskId = 4, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
-                new TaskActivity {TaskId = 5, Status = "completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
-                new TaskActivity {TaskId = 6, Status = "completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Seals were leaking"},
-                new TaskActivity {TaskId = 7, Status = "In progress",   Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Leaves were starting to accumulate..."},
+                new TaskActivity {TaskId = 1, Status = "Pending", Condition = "Fair", Action = "Filter replacement failed!", TimeSpent = .5m, Notes = "Filter was the wrong size, 20 x 20 x 4. Should have been 20 x 25 x 4."},
+                new TaskActivity {TaskId = 1, Status = "On-Hold", Condition = "Fair", Action = "Replaced Filter", TimeSpent = .5m, Notes = "Not too dirty but needed changing. Everything is in order."},
+                new TaskActivity {TaskId = 1, Status = "Canceled", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
+                new TaskActivity {TaskId = 3, Status = "Completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
+                new TaskActivity {TaskId = 4, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
+                new TaskActivity {TaskId = 5, Status = "Completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
+                new TaskActivity {TaskId = 6, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Seals were leaking"},
+                new TaskActivity {TaskId = 7, Status = "Pending",   Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Leaves were starting to accumulate..."},
                 new TaskActivity {TaskId = 8, Status = "Pending", Condition = "Poor", Action = "Inspection", TimeSpent = 1, Notes = ""}
             };
 
@@ -380,14 +380,14 @@ namespace MaintainHome.Database
         {
             var notifications = new List<MaintainHome.Models.Notification>
             {
-                new MaintainHome.Models.Notification {TaskId = 1, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 2, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 3, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 4, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 5, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 6, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 7, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"},
-                new MaintainHome.Models.Notification {TaskId = 8, UserId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647"}
+                new MaintainHome.Models.Notification {TaskId = 1, TargetName = "Chris Byrd", TargetEmail = "Chris-byrd@swbell.net", TargetPhone = "2149955625", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 1, TargetName = "Alexandria Byrd", TargetEmail = "Ally-byrd@swbell.net", TargetPhone = "2149955645", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 1, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955695", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 4, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 5, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 6, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 7, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647", Message="Task is due Soon"},
+                new MaintainHome.Models.Notification {TaskId = 8, TargetName = "William Byrd", TargetEmail = "wm-byrd@swbell.net", TargetPhone = "2149955647", Message="Task is due Soon"}
             };
 
             var notificationRepository = new NotificationRepository();

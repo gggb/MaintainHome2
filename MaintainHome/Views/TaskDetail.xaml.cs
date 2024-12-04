@@ -1,4 +1,5 @@
 using MaintainHome.Models;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace MaintainHome.Views
@@ -7,13 +8,37 @@ namespace MaintainHome.Views
     {
         private Tasks _task;
 
+        public ObservableCollection<string> StatusOptions { get; set; } =
+            new ObservableCollection<string> { "Completed", "Pending", "On-Hold", "Canceled" };
+
+        public ObservableCollection<string> PriorityOptions { get; set; } =
+            new ObservableCollection<string> { "Low", "Medium", "Urgent", };
+
+
+
+
         public TaskDetail(Tasks task)
         {
+            
             InitializeComponent();
+
+            // Assuming PriorityOptions and StatusOptions are defined in the same class
+            PriorityOptions = new ObservableCollection<string> 
+            { 
+               "Low", "Medium", "Urgent" 
+            }; 
+            StatusOptions = new ObservableCollection<string> 
+            { 
+                "Completed", "Pending", "On-Hold", "Canceled" 
+            };
+
+
             Debug.WriteLine("TaskDetail Page Initialized");
 
             _task = task ?? new Tasks(); // Initialize a new Tasks object if null
-            BindingContext = _task;
+            BindingContext = this; 
+            
+            this.BindingContext = _task;
 
             Debug.WriteLine($"BindingContext set: {_task.Title}");
 
@@ -38,6 +63,9 @@ namespace MaintainHome.Views
 
             // Load TaskActivityControl with the taskId
             await TaskActivityControl.LoadTaskActivities(_task.Id);
+
+            // Load NotificationControl with the taskId
+            await NotificationControl.LoadNotifications(_task.Id);
         }
 
         protected override void OnDisappearing()

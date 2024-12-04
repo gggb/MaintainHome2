@@ -30,11 +30,33 @@ namespace MaintainHome.Behaviors
             base.OnDetachingFrom(bindable);
         }
 
+        //void OnTextChanged(object sender, TextChangedEventArgs e)   //this routine was cause runtime exceptions!!!!!
+        //{
+        //    IsValid = emailRegex.IsMatch(e.NewTextValue);
+        //    ((Entry)sender).TextColor = IsValid ? Colors.Black : Colors.Red;
+        //}
+
         void OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            IsValid = emailRegex.IsMatch(e.NewTextValue);
-            ((Entry)sender).TextColor = IsValid ? Colors.Black : Colors.Red;
+            var entry = sender as Entry;
+            var newValue = e.NewTextValue;
+
+            if (!string.IsNullOrEmpty(newValue))
+            {
+                IsValid = emailRegex.IsMatch(newValue);
+            }
+            else
+            {
+                IsValid = false; // Consider empty values as invalid
+            }
+
+            entry.TextColor = IsValid ? Colors.Black : Colors.Red;
         }
+
+
+
+
+
     }
 }
 

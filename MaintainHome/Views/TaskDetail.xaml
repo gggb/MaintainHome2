@@ -9,57 +9,92 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="10,0,10,0">
-            <!-- Section heading -->
-            <Label Text="Basic Task Detail" 
+            <!-- Section heading "Basic Task Detail"-->
+            <Label Text="Basic Task Detail" FontFamily="RobotoRegular"
                FontSize="Medium" Margin="0,0,0,10"
                TextDecorations="Underline" 
                HorizontalOptions="Start" />
 
             <!-- Title -->
             <HorizontalStackLayout Margin="15,-5,0,10">
-                <Label Text="Title:" FontSize="Medium"/>
-                <Entry Text="{Binding Title}" WidthRequest="300" Margin="0,-10,0,0" />
+                <Label Text="Title:" FontFamily="RobotoRegular" FontSize="15"/>
+                <Entry Text="{Binding Title}" WidthRequest="300" FontSize="14" Margin="0,-10,0,0" FontFamily="RobotoRegular"/>
             </HorizontalStackLayout>
 
             <!-- Description -->
-            <HorizontalStackLayout Margin="15,-15,0,-3">
-                <Label Text="Description:" FontSize="Medium"/>
+            <HorizontalStackLayout Margin="15,-20,0,-3">
+                <Label Text="Description:" FontFamily="RobotoRegular" FontSize="15"/>
             </HorizontalStackLayout>
             <Frame BorderColor="Gray" CornerRadius="5" Padding="5" Margin="15,-0">
-                <Editor x:Name="DescriptionEditor" Text="{Binding Description}" HeightRequest="60" AutoSize="TextChanges" Margin="0,-10"/>
+                <Editor x:Name="DescriptionEditor" FontSize="14" FontFamily="RobotoRegular" Text="{Binding Description}" HeightRequest="60" AutoSize="TextChanges" Margin="0,-10"/>
             </Frame>
 
             <!-- Category and Due Date -->
-            <FlexLayout Direction="Row" AlignItems="Center" Margin="15,10,0,5" Wrap="NoWrap">
-                <Label Text="Category: " FontSize="Medium" Margin="0,0,0,0"/>
-                <Label Text="{Binding CategoryId}" FontSize="Small" TextDecorations="Underline" />
-                <Label Text="Due Date:" FontSize="Medium" Margin="15,0,0,0" />
-                <DatePicker x:Name="DueDateDatePicker" Date="{Binding DueDate}" FontSize="Small" WidthRequest="120" Margin="0,0,0,0" />
+            <FlexLayout Direction="Row" AlignItems="Center" Margin="15,3,0,5" Wrap="NoWrap">
+                <Label Text="Category: " FontFamily="RobotoRegular" FontSize="15" Margin="0,0,0,0"/>
+                <Entry Text="{Binding CategoryId}" FontSize="15" FontFamily="RobotoRegular" />
+                <Label Text="Due Date:" FontSize="15" Margin="15,0,0,0" />
+                <DatePicker x:Name="DueDateDatePicker" FontFamily="RobotoRegular" Date="{Binding DueDate}" FontSize="14" WidthRequest="90" Margin="0,0,0,0" />
             </FlexLayout>
 
             <!-- Frequency -->
             <HorizontalStackLayout Margin="15,10,0,0">
-                <Label Text="Freq Days:" FontSize="Medium" />
-                <Entry Text="{Binding FrequencyDays}" WidthRequest="40" Margin="0,-7,0,0"/>
-                <Label Text="Pri:" FontSize="Medium" Margin="-5,1,0,0"/>
-                <Picker x:Name="PriorityPicker" Title="Medium" Margin="3,-7,7,0"
-                    SelectedItem="{Binding Priority}" 
-                     />
-                <Label Text="  Status:" FontSize="Medium" Margin="-10,1,0,0" />
-                <Picker x:Name="StatusPicker" Title="Complete" Margin="5,-7,0,0"
-                    SelectedItem="{Binding Status}" 
-                    WidthRequest="200" />
+                <Label Text="Freq Days:" FontFamily="RobotoRegular" FontSize="15" Margin="0,-15,0,0"/>
+                <Entry x:Name="FrequencyDays" Text="{Binding FrequencyDays}" FontFamily="RobotoRegular" WidthRequest="30" Margin="0,-25,0,0"/>
+                <Label Text="Pri:" FontSize="15" FontFamily="RobotoRegular" Margin="5,-15,0,0"/>
+
+
+                <Picker x:Name="PriorityPicker" FontFamily="RobotoRegular" Title="Priority" Margin="0,-25,7,0" WidthRequest="50" HeightRequest="40">
+                    <Picker.Items>
+                        <x:String>Low</x:String>
+                        <x:String>Medium</x:String>
+                        <x:String>Urgent</x:String>
+                    </Picker.Items>
+                </Picker>
+
+
+                <Label Text="  Status:" FontSize="15" FontFamily="RobotoRegular" Margin=" 0,-15,0,0" />
+                <Picker x:Name="StatusPicker" FontFamily="RobotoRegular" Title="Status" Margin="5,-25,0,0" WidthRequest="75" HeightRequest="42">
+                    <Picker.Items>
+                        <x:String>Completed</x:String>
+                        <x:String>Pending</x:String>
+                        <x:String>On-Hold</x:String>
+                        <x:String>Canceled</x:String>
+                    </Picker.Items>
+                </Picker>
             </HorizontalStackLayout>
 
-            <!-- Task Activities -->
-            <!-- Task Activities -->
+            <HorizontalStackLayout Margin="0,10">
+                <Button Text="Add"  Margin="30,0,10,0" FontFamily="RobotoRegular" FontSize="15" HorizontalOptions="Center"  HeightRequest="37" WidthRequest="86" />
+                <Button Text="Save"  Margin="10,0,10,0" FontFamily="RobotoRegular" FontSize="15" HorizontalOptions="Center"  HeightRequest="40" WidthRequest="86" />
+                <Button Text="Delete"   Margin="10,0,10,0" FontFamily="RobotoRegular" FontSize="15" HorizontalOptions="Center"  HeightRequest="40" WidthRequest="86" />
+            </HorizontalStackLayout>
+
+                <!-- Task Activities -->
             <toolkit:Expander>
                 <toolkit:Expander.Header>
-                    <Label Text="Task Activities" FontSize="Medium" />
+                    <Label x:Name="TaskActivityLable" 
+                           Text="{Binding TaskActivityLabelText, Source={x:Reference TaskActivityControl}}"
+                           FontSize="15" FontFamily="RobotoRegular"
+                           Margin="0,25,0,0"  
+                           TextDecorations="Underline"/>
                 </toolkit:Expander.Header>
                 <controls:DetailPageControl x:Name="TaskActivityControl" Title="Task Activity List"/>
             </toolkit:Expander>
-            
+
+            <!-- Task Activities -->
+            <toolkit:Expander>
+                <toolkit:Expander.Header>
+                    <Label x:Name="NotificationLable" 
+                 Text="{Binding NotificationLabelText, Source={x:Reference NotificationControl}}"
+                 FontSize="15" FontFamily="RobotoRegular"
+                 Margin="0,5,0,0"  
+                 TextDecorations="Underline"/>
+                </toolkit:Expander.Header>
+                <controls:NotificationControl x:Name="NotificationControl" Title="Notification List"/>
+            </toolkit:Expander>
+
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
