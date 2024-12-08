@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MaintainHome.Models;
+//using Android.Gms.Tasks;
 
 namespace MaintainHome.Database
 {
@@ -21,6 +22,12 @@ namespace MaintainHome.Database
         public async Task<bool> AddTaskHelpAsync(TaskHelp taskHelp)
         {
             return await _database.InsertAsync(taskHelp) > 0;
+        }
+
+        // Read (Get) all TaskHelp records that match the TaskId
+        public async Task<List<TaskHelp>> GetAllTaskHelpsAsyncByTaskId(int taskId)
+        {
+            return await _database.Table<TaskHelp>().Where(t => t.TaskId == taskId).ToListAsync();
         }
 
         // Read (Get) TaskHelp by ID

@@ -66,7 +66,28 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Controls\HelpControl.xaml.cs">
+	    <DependentUpon>HelpControl.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Controls\PartControl.xaml.cs">
+	    <DependentUpon>PartControl.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Controls\NoteControl.xaml.cs">
+	    <DependentUpon>NoteControl.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="Controls\DetailPageControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Controls\HelpControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Controls\PartControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Controls\NoteControl.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Controls\NotificationControl.xaml">

@@ -13,11 +13,13 @@ namespace MaintainHome.Models
     {
         [PrimaryKey, AutoIncrement]
         public int NotificationId { get; set; }
-        public int TaskId { get; set; }
+        [Indexed] public int TaskId { get; set; }
         //public int UserId { get; set; }
         public string? Message { get; set; }
         public string? TargetName { get; set; }
         public string? TargetEmail { get; set; }
         public string? TargetPhone { get; set; }
+        //public bool EmailCheck { get; set; }
+        public bool TextCheck { get; set; }
     }
 }

@@ -11,10 +11,11 @@ namespace MaintainHome.Models
     {
         [PrimaryKey, AutoIncrement]
         public int PartBuyId { get; set; }
-        public int PartInfoId { get; set; }
+        [Indexed] public int PartInfoId { get; set; }
         public string? SourceName { get; set; }
         public string? SourceURL { get; set; }
         public double Price { get; set; }
         public bool Availability { get; set; }
     }
 }
+

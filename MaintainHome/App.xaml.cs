@@ -3,6 +3,8 @@ using Microsoft.Maui.Controls;
 using MaintainHome.Views;
 using MaintainHome.Database;
 using System.Threading.Tasks;
+using Plugin.LocalNotification.EventArgs;
+using Plugin.LocalNotification;
 
 namespace MaintainHome
 {
@@ -16,6 +18,10 @@ namespace MaintainHome
             InitializeDatabase();
 
             MainPage = new NavigationPage(new Login());
+
+            LocalNotificationCenter.Current.RequestNotificationPermission();  // Request notification permission
+            LocalNotificationCenter.Current.NotificationActionTapped += OnNotificationActionTapped;  // Handle notification action tapped
+
         }
 
         private async void InitializeDatabase()
@@ -26,5 +32,18 @@ namespace MaintainHome
             // Initialize the database
             await DatabaseInitializer.InitializeAsync(database);
         }
+
+        private void OnNotificationActionTapped(NotificationActionEventArgs e)
+        {
+            if (e.IsDismissed) return;
+
+            if (e.IsTapped)
+            {
+                // Handle the notification tap action
+                // Navigate to the relevant page or perform any other action
+            }
+        }
+
+
     }
 }

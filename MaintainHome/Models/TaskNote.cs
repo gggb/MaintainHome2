@@ -11,6 +11,7 @@ namespace MaintainHome.Models
     {
         [PrimaryKey, AutoIncrement]
         public int NoteId { get; set; }
+        [Indexed]
         public int TaskId { get; set; }
         public string? Type { get; set; }
         public string? NoteContent { get; set; }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MaintainHome.Models;
 using SQLite;
+//using static Android.Media.Midi.MidiDeviceInfo;
 
 namespace MaintainHome.Database
 {
@@ -22,12 +23,29 @@ namespace MaintainHome.Database
         {
             return await _database.InsertAsync(partInfo) > 0;
         }
+        
+
+
+
+
 
         // Read (Get) PartsInfo by ID
         public async Task<PartInfo> GetPartsInfoAsync(int partInfoId)
         {
             return await _database.FindAsync<PartInfo>(partInfoId);
         }
+
+        // Read (Get) all TaskNot records ethat match the TaskId
+        public async Task<List<PartInfo>> GetAllPartsInfoAsyncByTaskId(int taskId)
+        {
+            return await _database.Table<PartInfo>().Where(t => t.TaskId == taskId).ToListAsync();
+        }
+
+
+
+
+
+
 
         // Update PartsInfo
         public async Task<bool> UpdatePartsInfoAsync(PartInfo partInfo)

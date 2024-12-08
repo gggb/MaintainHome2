@@ -11,9 +11,12 @@ namespace MaintainHome.Models
     {
         [PrimaryKey, AutoIncrement]
         public int PartInfoId { get; set; }
-        public string? PartName { get; set; }
-        public string? PartDescription { get; set; }
-        public int TaskId { get; set; }
-        public string? ImagePath { get; set; }
+        [Indexed] public int TaskId { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public double Price { get; set; }
+        public string? Source { get; set; }
+        
+        //public string? ImagePath { get; set; }
     }
 }

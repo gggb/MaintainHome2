@@ -1,6 +1,7 @@
 using MaintainHome.Models;
 using MaintainHome.Database;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
@@ -20,131 +21,207 @@ namespace MaintainHome.Views
         public Dashboard()
         {
             InitializeComponent();
-            BindingContext = this; // Set the BindingContext
+            BindingContext = this;
 
-            _tasksRepository = new TasksRepository();  // Initialize the tasks repository
-            _categoryRepository = new CategoryRepository();  // Initialize the categories repository
+            try
+            {
+                _tasksRepository = new TasksRepository();
+                _categoryRepository = new CategoryRepository();
 
-            LoadData();  // Load tasks and categories from the database
+                LoadData(); // Load tasks and categories from the database
 
-            OnTaskDoubleTapped = new Command<Tasks>(OnTaskDoubleTappedHandler);
+                OnTaskDoubleTapped = new Command<Tasks>(OnTaskDoubleTappedHandler);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing Dashboard: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Error", "An error occurred while initializing the dashboard.", "OK");
+                });
+            }
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            ApplyEmphasisToOverdueTasks();
+            try
+            {
+                ApplyEmphasisToOverdueTasks();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in OnAppearing: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Error", "An error occurred while updating overdue tasks.", "OK");
+                });
+            }
         }
+
 
         private async void LoadData()
         {
             try
             {
-                // Load tasks from the database where status is not "closed"
-                var tasks = await _tasksRepository.GetAllOpenTasksAsync();
+                var tasks = await _tasksRepository.GetTasksAsync();
                 _tasks = new ObservableCollection<Tasks>(tasks);
 
-                // Load categories from the database
                 var categories = await _categoryRepository.GetAllCategoriesAsync();
                 _categories = categories.ToDictionary(c => c.CategoryId, c => c.Title);
 
-                // Process tasks for display
                 FilterAndSortTasks();
-
-                // Emphasize overdue tasks right after loading
                 ApplyEmphasisToOverdueTasks();
-
-                // Update traffic light icon after loading data
                 UpdateTrafficLightIcon();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading data: {ex.Message}");
+                Debug.WriteLine($"Error loading data: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Error", "An error occurred while loading data.", "OK");
+                });
             }
         }
 
+
         private void FilterAndSortTasks()
         {
-            var sortedTasks = _tasks.OrderBy(t => t.DueDate).ToList();
-
-            AllTasks.Clear();
-            foreach (var task in sortedTasks)
+            try
             {
-                AllTasks.Add(task);
+                var sortedTasks = _tasks.OrderBy(t => t.DueDate).ToList();
+
+                AllTasks.Clear();
+                foreach (var task in sortedTasks)
+                {
+                    AllTasks.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error filtering and sorting tasks: {ex.Message}");
             }
         }
 
         private void ApplyEmphasisToOverdueTasks()
         {
-            foreach (var task in AllTasks)
+            try
             {
-                if (task.DueDate <= DateTime.Now && !task.Title.Contains("⚠️"))
+                foreach (var task in AllTasks)
                 {
-                    // Apply emphasis - replace exclamation mark with warning triangle
-                    task.Title = $"⚠️ {task.Title}";
-                    // Additional styling can be applied here if needed
+                    if (task.DueDate <= DateTime.Now && !task.Title.Contains("⚠️"))
+                    {
+                        task.Title = $"⚠️ {task.Title}";
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error applying emphasis to overdue tasks: {ex.Message}");
             }
         }
 
         private void UpdateTrafficLightIcon()
         {
-            // Implementation of traffic light icon update
+            try
+            {
+                // Implementation of traffic light icon update
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating traffic light icon: {ex.Message}");
+            }
         }
 
         private async void OnAddTaskButtonClicked(object sender, EventArgs e)
         {
-            var result = await DisplayAlert("New Task", "Are you sure you want to add a new task?", "Yes", "No");
-            if (result)
+            try
             {
-                // Deselect any selected item
-                var collectionView = this.FindByName<CollectionView>("TaskCollectionView");
-                if (collectionView.SelectedItem != null)
+                var result = await DisplayAlert("New Task", "Are you sure you want to add a new task?", "Yes", "No");
+                if (result)
                 {
-                    collectionView.SelectedItem = null;
-                }
+                    var collectionView = this.FindByName<CollectionView>("TaskCollectionView");
+                    if (collectionView.SelectedItem != null)
+                    {
+                        collectionView.SelectedItem = null;
+                    }
 
-                // Navigate to Task Detail page with a new empty task
-                EditTaskDetail(new Tasks());
+                    EditTaskDetail(new Tasks());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error adding new task: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while adding a new task.", "OK");
             }
         }
 
-
         private void EditTaskDetail(Tasks task)
         {
-            // Navigate to Task Detail page with the given task
-            Debug.WriteLine("Navigating to TaskDetail page with task: " + task.Title);
-            Navigation.PushAsync(new TaskDetail(task));
+            try
+            {
+                Debug.WriteLine("Navigating to TaskDetail page with task: " + task.Title);
+                Navigation.PushAsync(new TaskDetail(task));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating to TaskDetail: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Error", "An error occurred while navigating to the task details.", "OK");
+                });
+            }
         }
+
 
         private void OnTaskTapped(object sender, SelectionChangedEventArgs e)
         {
             // Commenting out the navigation logic
             /*
-            var selectedTask = e.CurrentSelection.FirstOrDefault() as Tasks;
-            if (selectedTask != null)
+            try
             {
-                // Handle task selection - navigate to task detail page
-                EditTaskDetail(selectedTask);
+                var selectedTask = e.CurrentSelection.FirstOrDefault() as Tasks;
+                if (selectedTask != null)
+                {
+                    EditTaskDetail(selectedTask);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling task tap: {ex.Message}");
             }
             */
         }
 
         private void OnEditTaskSwiped(object sender, EventArgs e)
         {
-            var swipeItem = sender as SwipeItem;
-            var task = swipeItem?.BindingContext as Tasks;
-            if (task != null)
+            try
             {
-                EditTaskDetail(task);
+                var swipeItem = sender as SwipeItem;
+                var task = swipeItem?.BindingContext as Tasks;
+                if (task != null)
+                {
+                    EditTaskDetail(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling task swipe: {ex.Message}");
             }
         }
 
         private void OnTaskDoubleTappedHandler(Tasks task)
         {
-            if (task != null)
+            try
             {
-                EditTaskDetail(task);
+                if (task != null)
+                {
+                    EditTaskDetail(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling task double tap: {ex.Message}");
             }
         }
     }

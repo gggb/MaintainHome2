@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using MaintainHome.Models;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using MaintainHome.Helper;
+//using AndroidX.Annotations;
+using Plugin.LocalNotification;
+using System.Diagnostics;
+//using static Android.Graphics.ImageDecoder;
 //using Android.Gms.Tasks ;
 //using Android.App;
 //using Android.App;
@@ -16,8 +20,10 @@ using MaintainHome.Helper;
 
 namespace MaintainHome.Database
 {
-    public static class DatabaseInitializer
+    public partial class DatabaseInitializer
     {
+        private static PlugInNotificationRepository _plugInNotificationRepository;
+        private static TasksRepository? _tasksRepository;
         public static async Task InitializeAsync(SQLiteAsyncConnection database)
         {
             await database.DropTableAsync<User>();
@@ -34,7 +40,7 @@ namespace MaintainHome.Database
             await database.CreateTableAsync<User>();
             await database.CreateTableAsync<PartBuy>();
             await database.CreateTableAsync<PartInfo>();
-            await database.CreateTableAsync<Tasks>();  
+            await database.CreateTableAsync<Tasks>();
             await database.CreateTableAsync<TaskActivity>();
             await database.CreateTableAsync<MaintainHome.Models.Notification>();
             await database.CreateTableAsync<Category>();
@@ -62,7 +68,204 @@ namespace MaintainHome.Database
             await LoadInitialNotification(database);
             await LoadInitialTaskHelp(database);
             await LoadInitialTaskNote(database);
+
+            //await EvaluateLoadedTaskForNotifications();
         }
+
+
+        private static async Task EvaluateLoadedTaskForNotifications()
+        {
+            // Set NotifyTime to 36 months from now
+            DateTime notifyTime = DateTime.Now.AddSeconds(15);
+
+            // Log the expected NotifyTime
+            Debug.WriteLine($"Expected NotifyTime: {notifyTime}");
+
+            // Create a basic notification request
+            var startNotifyRequest = new NotificationRequest
+            {
+                NotificationId = 1, // Using a static ID for testing purposes
+                Title = "Test Notification",
+                Description = "This is a test notification to see if it works.",
+                Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
+            };
+
+            // Ensure notification permissions are granted
+            Debug.WriteLine($"**************Asking for notification permissions: {startNotifyRequest.Schedule}");
+            bool isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
+            if (!isNotifyPermissionsGranted)
+            {
+                await LocalNotificationCenter.Current.RequestNotificationPermission();
+            }
+
+            // Log notification request details
+            Debug.WriteLine($"***Notification Request Details: ID: {startNotifyRequest.NotificationId}, Title: {startNotifyRequest.Title}, Description: {startNotifyRequest.Description}, NotifyTime: {startNotifyRequest.Schedule.NotifyTime}");
+
+            // Send the notification request
+            Debug.WriteLine($"**************Sent notification request*************");
+            try
+            {
+                bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
+                Debug.WriteLine($"***Did request execute successfully: {wasNotifyRequestSuccessful}");
+            }
+            catch (Exception ex)
+            {
+                // Log any exceptions that occur
+                Debug.WriteLine($"***Error sending notification: {ex.Message}");
+            }
+        }
+
+
+
+
+
+        //_tasksRepository = new TasksRepository();
+        //var tasks = await _tasksRepository.GetTasksAsync(); // Fetch tasks from the repository
+
+        //foreach (var task in tasks)
+        //{
+        //    if (task.Status == "Scheduled")
+        //    {
+        //        // Schedule upcoming task reminder alert when pending task is within 3 days of scheduled due date.
+        //        DateTime now = DateTime.UtcNow;
+        //        if (task.DueDate.HasValue && task.DueDate.Value > DateTime.Now && !task.ReminderSent && task.DueDate.Value <= DateTime.Now.AddDays(3))
+        //        {
+        //            // Prepare Notification
+        //            var startNotifyRequest = new NotificationRequest
+        //            {
+        //                NotificationId = task.Id,
+        //                Title = "Upcoming Task Reminder",
+        //                Description = $"Your task '{task.Title}' is due soon.",
+        //                Schedule = new NotificationRequestSchedule { NotifyTime = task.DueDate.Value.AddDays(-3) }
+        //            };
+
+        //            // Ensure notification permissions are granted (it was requested during application startup, in App.xaml.cs).
+        //            // If permissions are not granted, make another request.   
+        //            Debug.WriteLine($"**************Asking for notification permissions:  {startNotifyRequest.Schedule}");
+        //            bool isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        //            if (!isNotifyPermissionsGranted)
+        //            {
+        //                await LocalNotificationCenter.Current.RequestNotificationPermission();
+        //            }
+
+        //            //Send the request 
+        //            Debug.WriteLine($"**************Sent notification request*************");
+        //            bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
+        //            Debug.WriteLine($"***did request execute successfully: {wasNotifyRequestSuccessful}");
+
+        //            // update the Tasks table (ReminderSent) to prevent additional notifictions
+        //            if (wasNotifyRequestSuccessful)
+        //            {
+        //                task.ReminderSent = true;
+        //                await _tasksRepository.UpdateTaskAsync(task);
+
+        //                // update the PluginNotification table with the sendout details (in order to delelte it later if necessary)
+        //                var plugInNotification = new PlugInNotification
+        //                {
+        //                    NotificationId = task.Id,
+        //                    NotificationType = "Pre-Notice",
+        //                    NotificationDate = task.DueDate.Value.AddDays(-3).ToUniversalTime(),
+        //                    NotificationTitle = startNotifyRequest.Title,
+        //                    NotificationDescription = startNotifyRequest.Description
+        //                };
+
+        //                //_tasksRepository = new TasksRepository();
+        //                _plugInNotificationRepository = new PlugInNotificationRepository();
+        //                await _plugInNotificationRepository.AddPlugInNotificationAsync(plugInNotification);
+        //            }
+
+        //            // Schedule overdue task alert
+        //            if (task.DueDate.HasValue && task.DueDate.Value < DateTime.Now && !task.OverdueAlertSent)
+        //            {
+        //                int overdueDays = (DateTime.Now - task.DueDate.Value).Days;
+        //                string day;
+        //                if (overdueDays > 1)
+        //                {
+        //                    day = "days";
+        //                }
+        //                else
+        //                {
+        //                    day = "day";
+        //                }
+
+        //                try
+        //                { 
+        //                    // Prepare Notification
+        //                    startNotifyRequest.NotificationId = task.Id;
+        //                    startNotifyRequest.Title = "Overdue Task Alert";
+        //                    startNotifyRequest.Description = $"Your task '{task.Title}', scheduled for {task.DueDate.Value.ToShortDateString()}, is {overdueDays} {day} overdue.";
+        //                    startNotifyRequest.Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now };
+
+        //                    //// Ensure notification permissions were granted (it was requested during application startup, in App.xaml.cs).
+        //                    //// If permissions are not granted, make another request.   
+        //                    //Debug.WriteLine($"**************Asking for notification permissions:  {startNotifyRequest.Schedule}");
+        //                    //isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        //                    //if (!isNotifyPermissionsGranted)
+        //                    //{
+        //                    //    await LocalNotificationCenter.Current.RequestNotificationPermission();
+        //                    //}
+
+        //                    ////Send the request 
+        //                    //Debug.WriteLine($"**************Sent notification request*************");
+        //                    //wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
+        //                    //Debug.WriteLine($"***did request execute successfully: {wasNotifyRequestSuccessful}");
+
+
+        //                    // Log notification request details
+        //                    Debug.WriteLine($"***Notification Request Details***");
+        //                    Debug.WriteLine($"ID: {startNotifyRequest.NotificationId}");
+        //                    Debug.WriteLine($"Title: {startNotifyRequest.Title}");
+        //                    Debug.WriteLine($"Description: {startNotifyRequest.Description}");
+        //                    Debug.WriteLine($"NotifyTime: {startNotifyRequest.Schedule.NotifyTime}");
+        //                    Debug.WriteLine($"Schedule: {startNotifyRequest.Schedule}");
+
+        //                    // Ensure notification permissions are granted
+        //                    Debug.WriteLine($"**************Asking for notification permissions: {startNotifyRequest.Schedule}");
+        //                    isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        //                    if (!isNotifyPermissionsGranted)
+        //                    {
+        //                        await LocalNotificationCenter.Current.RequestNotificationPermission();
+        //                    }
+
+        //                    // Send the notification request
+        //                    Debug.WriteLine($"**************Sent notification request*************");
+        //                    wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
+        //                    Debug.WriteLine($"***Did request execute successfully: {wasNotifyRequestSuccessful}");
+
+        //                    //return wasNotifyRequestSuccessful;
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    // Log any exceptions that occur
+        //                    Debug.WriteLine($"***Error sending notification: {ex.Message}");
+        //                    //return false;
+        //                }
+        //            }         
+        //            // If notification send was successful, update the Tasks table (ReminderSent) to prevent additional notifictions
+        //            if (wasNotifyRequestSuccessful)
+        //            {
+        //                // Update boolean OverdueAlertSent to true, in the Tasks class.
+        //                task.OverdueAlertSent = true;
+        //                await _tasksRepository.UpdateTaskAsync(task);
+
+        //                // update the PluginNotification table with the sendout details (in order to delelte it later if necessary)
+        //                var plugInNotification = new PlugInNotification
+        //                {
+        //                    NotificationId = task.Id,
+        //                    NotificationType = "Pre-Notice",
+        //                    NotificationDate = task.DueDate.Value.AddDays(-3).ToUniversalTime(),
+        //                    NotificationTitle = startNotifyRequest.Title,
+        //                    NotificationDescription = startNotifyRequest.Description
+        //                };
+
+        //                //_tasksRepository = new TasksRepository();
+        //                _plugInNotificationRepository = new PlugInNotificationRepository();
+        //                await _plugInNotificationRepository.AddPlugInNotificationAsync(plugInNotification);
+        //            }
+        //        }
+        //    }
+        //}
+
 
 
         private static async Task LoadInitialTasks(SQLiteAsyncConnection database)
@@ -73,9 +276,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Change A/C filter",
                     Description = "Change the air conditioner filter",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 30,
-                    DueDate = DateTime.Today.AddDays(-5),
+                    DueDate = DateTime.Today.AddDays(10),
                     Priority = "Medium",
                     UserId = 1,
                     CategoryId = 1,
@@ -85,9 +288,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Drain hot-water heater sediment",
                     Description = "Drain the sediment from the hot-water heater",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 180,
-                    DueDate = DateTime.Today.AddDays(-3),
+                    DueDate = DateTime.Today.AddDays(15),
                     Priority = "Low",
                     UserId = 1,
                     CategoryId = 2,
@@ -97,9 +300,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Backwash pool filter",
                     Description = "Backwash the pool filter if the PSI is over 20",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 60,
-                    DueDate = DateTime.Today.AddDays(-1),
+                    DueDate = DateTime.Today.AddDays(20),
                     Priority = "Med",
                     UserId = 1,
                     CategoryId = 3,
@@ -109,9 +312,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Replace washing machine hoses",
                     Description = "",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 365,
-                    DueDate = DateTime.Today.AddDays(+7),
+                    DueDate = DateTime.Today.AddDays(25),
                     Priority = "Medium",
                     UserId = 1,
                     CategoryId = 2,
@@ -121,9 +324,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Oil/inspect garage door",
                     Description = "Oil the wheels of the garage door side reel",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 90,
-                    DueDate = DateTime.Today.AddDays(+14),
+                    DueDate = DateTime.Today.AddDays(30),
                     Priority = "Low",
                     UserId = 1,
                     CategoryId = 4,
@@ -133,9 +336,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Check bathroom faucets for leaks",
                     Description = "Replace the seal of the bathroom faucet",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 180,
-                    DueDate = DateTime.Today.AddDays(+30),
+                    DueDate = DateTime.Today.AddDays(35),
                     Priority = "Low",
                     UserId = 1,
                     CategoryId = 2,
@@ -145,9 +348,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Check Gutters and ensure downspouts aren't blocked",
                     Description = "Inspect the gutters and ensure the downspouts are not blocked",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 30,
-                    DueDate = DateTime.Today.AddDays(+45),
+                    DueDate = DateTime.Today.AddDays(45),
                     Priority = "Low",
                     UserId = 1,
                     CategoryId = 5,
@@ -157,9 +360,9 @@ namespace MaintainHome.Database
                 {
                     Title = "Check sprinkler system for broken heads or stuck valves",
                     Description = "Inspect the sprinkler system for any broken heads or stuck valves",
-                    Status = "Pending",
+                    Status = "Scheduled",
                     FrequencyDays = 90,
-                    DueDate = DateTime.Today.AddDays(+60),
+                    DueDate = DateTime.Today.AddDays(60),
                     Priority = "Urgent",
                     UserId = 1,
                     CategoryId = 6,
@@ -203,8 +406,8 @@ namespace MaintainHome.Database
 
             var taskActivityRepository = new TaskActivityRepository();
             foreach (var taskActivity in taskActivities)
-            {               
-                    await taskActivityRepository.AddTaskActivity(taskActivity);               
+            {
+                await taskActivityRepository.AddTaskActivity(taskActivity);
             }
             //Validate
             Console.WriteLine($"************************TaskActivity Load");
@@ -245,15 +448,15 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Help Id: {part.PartBuyId}, PartInfo Id: {part.PartInfoId}, Source name: {part.SourceName}, URL: {part.SourceURL}, Price: {part.Price}, Availability: {part.Availability}");
             }
         }
-        
+
         private static async Task LoadInitialPartInfo(SQLiteAsyncConnection database)
         {
             var partinfos = new List<PartInfo>
             {
-                new PartInfo {TaskId = 1, PartName = "20x25x4 A/C Filter ", PartDescription = "Filterbuy 20x25x4 Air Filter MERV 8 Dust Defense (1-Pack)", ImagePath = "" },
-                new PartInfo {TaskId = 4, PartName = "Stainless Steel Washing Machine Hoses", PartDescription = "Premium Proof Stainless Steel Washing Machine Hoses (6 FT)", ImagePath = ""},
-                new PartInfo {TaskId = 5, PartName = "Nylon Garage Door Rollers", PartDescription = "10 Pack 2'' Ultra-Quiet Nylon Garage Door Rollers 7\" Stem", ImagePath = ""},
-                new PartInfo {TaskId = 7, PartName = "EasyOn Gutter Guard System", PartDescription = "", ImagePath = ""},                                                                            // Type 1 = video, 2 = written instructions. 3 = pictoral instructions
+                new PartInfo {TaskId = 1, Name = "20x25x4 A/C Filter ",                     Description = "Filterbuy 20x25x4 Air Filter MERV 8 Dust Defense (1-Pack)",  Price = 9.99 },
+                new PartInfo {TaskId = 4, Name = "Stainless Steel Washing Machine Hoses",   Description = "Premium Proof Stainless Steel Washing Machine Hoses (6 FT)", Price = 9.99},
+                new PartInfo {TaskId = 5, Name = "Nylon Garage Door Rollers",               Description = "10 Pack 2'' Ultra-Quiet Nylon Garage Door Rollers 7\" Stem", Price = 9.99},
+                new PartInfo {TaskId = 7, Name = "EasyOn Gutter Guard System",              Description = "",                                                           Price = 9.99},                                                                            // Type 1 = video, 2 = written instructions. 3 = pictoral instructions
             };
 
             var partInfoRepository = new PartInfoRepository();
@@ -272,19 +475,19 @@ namespace MaintainHome.Database
             Console.WriteLine($"************************PartInfo Load");
             foreach (var part in parts)
             {
-                Console.WriteLine($"***********Help Id: {part.PartInfoId}, Task Id: {part.TaskId}, Part name: {part.PartName}, Descr: {part.PartDescription}, Img location: {part.ImagePath}");
+                Console.WriteLine($"***********Part Id: {part.PartInfoId}, Part Id: {part.TaskId}, Part name: {part.Name}, Descr: {part.Description}, Price: {part.Price}, Source: {part.Source}");
             }
         }
-        
+
         private static async Task LoadInitialTaskHelp(SQLiteAsyncConnection database)
         {
             var taskHelps = new List<TaskHelp>
             {
-                new TaskHelp {TaskId = 1, Description = "How to change an A/C filter.", Type = 1, URL = "https://www.youtube.com/watch?v=sOcfx5o9-B4" },
-                new TaskHelp {TaskId = 4, Description = "The best type of washing machine hoses.", Type = 2, URL = "https://www.youtube.com/watch?v=cLvZIGCv36Q"},
-                new TaskHelp {TaskId = 5, Description = "Garage door Maintainance tips.", Type = 1, URL = "https://www.huxleyandco.co.uk/common-problems-with-electric-roller-garage-doors-and-how-to-fix-them/"},
-                new TaskHelp {TaskId = 7, Description = "Best and Worst Gutter Guards.", Type = 1, URL = "https://www.youtube.com/watch?v=Yc79p-kfTvo"},
-                new TaskHelp {TaskId = 8, Description = "Common Sprinkler problems.", Type = 1, URL = "https://www.youtube.com/watch?v=m6t35voD7v0" },                                                                               // Type 1 = video, 2 = written instructions. 3 = pictoral instructions
+                new TaskHelp {TaskId = 1, Description = "How to change an A/C filter.",            Type = "Video",     URL = "https://www.youtube.com/watch?v=sOcfx5o9-B4" },
+                new TaskHelp {TaskId = 1, Description = "The best type of washing machine hoses.", Type = "Pictorial", URL = "https://www.youtube.com/watch?v=cLvZIGCv36Q"},
+                new TaskHelp {TaskId = 1, Description = "Garage door Maintainance tips.",          Type = "Textual",   URL = "https://www.huxleyandco.co.uk/common-problems-with-electric-roller-garage-doors-and-how-to-fix-them/"},
+                new TaskHelp {TaskId = 7, Description = "Best and Worst Gutter Guards.",           Type = "Other",     URL = "https://www.youtube.com/watch?v=Yc79p-kfTvo"},
+                new TaskHelp {TaskId = 8, Description = "Common Sprinkler problems.",              Type = "Video",     URL = "https://www.youtube.com/watch?v=m6t35voD7v0" },                                                                               // Type 1 = video, 2 = written instructions. 3 = pictoral instructions
             };
 
             var taskHelpRepository = new TaskHelpRepository();
@@ -311,19 +514,19 @@ namespace MaintainHome.Database
         {
             var taskNotes = new List<TaskNote>
             {
-                new TaskNote {TaskId = 1, Type = "Comment", NoteContent = "Home Depot Filters are poor quality.", TimeStamp = DateTime.Now},
-                new TaskNote {TaskId = 4, Type = "Comment", NoteContent = "Use Stainless steel braided Hoses only.", TimeStamp = DateTime.Now},
-                new TaskNote {TaskId = 5, Type = "Comment", NoteContent = "Use nylon rollers as they are quiet.", TimeStamp = DateTime.Now},
-                new TaskNote {TaskId = 7, Type = "Comment", NoteContent = "Consider installing gutter leaf guards.", TimeStamp = DateTime.Now},
-                new TaskNote {TaskId = 8, Type = "Comment", NoteContent = "Rain Byrd heads are the least durable!.", TimeStamp = DateTime.Now},
+                new TaskNote {TaskId = 1, Type = "Complaint", NoteContent = "Home Depot Filters are poor quality.", TimeStamp = DateTime.Now},
+                new TaskNote {TaskId = 1, Type = "Improvement", NoteContent = "Use Stainless steel braided Hoses only.", TimeStamp = DateTime.Now},
+                new TaskNote {TaskId = 1, Type = "Observation", NoteContent = "Use nylon rollers as they are quiet.", TimeStamp = DateTime.Now},
+                new TaskNote {TaskId = 7, Type = "Other", NoteContent = "Consider installing gutter leaf guards.", TimeStamp = DateTime.Now},
+                new TaskNote {TaskId = 8, Type = "Complaint", NoteContent = "Rain Byrd heads are the least durable!.", TimeStamp = DateTime.Now},
             };
 
             var taskNoteRepository = new TaskNoteRepository();
 
             foreach (var tasknote in taskNotes)
             {
-                var resultTaskNote = await taskNoteRepository.GetTaskNoteAsync(tasknote.TaskId);
-                if (resultTaskNote == null) 
+                //var resultTaskNote = await taskNoteRepository.GetTaskNoteAsync(tasknote.TaskId);
+                //if (resultTaskNote == null) 
                 {
                     await taskNoteRepository.AddTaskNoteAsync(tasknote);
                 }
@@ -340,7 +543,7 @@ namespace MaintainHome.Database
 
         private static async Task LoadInitialUser(SQLiteAsyncConnection database)
         {
-            
+
             var initialUser = new User
             {
                 UserName = "billbyrd",
@@ -372,10 +575,10 @@ namespace MaintainHome.Database
                 // Display an alert if the user already exists
                 //await Application.Current.MainPage.DisplayAlert("Initialization", "User already exists in the database.", "OK");
             }
-          
+
         }
 
-        
+
         private static async Task LoadInitialNotification(SQLiteAsyncConnection database)
         {
             var notifications = new List<MaintainHome.Models.Notification>

@@ -30,7 +30,7 @@ namespace MaintainHome.Database
         }
 
         // Get all Tasks
-        public async Task<List<Tasks>> GetAllOpenTasksAsync()
+        public async Task<List<Tasks>> GetTasksAsync()
         {
             try
             {
@@ -45,7 +45,20 @@ namespace MaintainHome.Database
             }
         }
 
-
+        //public async Task<List<Tasks>> GetAllOpenTasksAsync()
+        //{
+        //    try
+        //    {
+        //        // Fetch all tasks where status is not "closed" using raw SQL query
+        //        return await _database.QueryAsync<Tasks>("SELECT * FROM Tasks WHERE Status != ?", "closed");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log or handle the exception as needed
+        //        Console.WriteLine($"Error fetching open tasks: {ex.Message}");
+        //        return new List<Tasks>();
+        //    }
+        //}
 
 
         // Update Task

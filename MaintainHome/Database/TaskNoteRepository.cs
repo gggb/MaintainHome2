@@ -23,6 +23,13 @@ namespace MaintainHome.Database
             return await _database.InsertAsync(taskNote) > 0;
         }
 
+
+        // Read (Get) all TaskNot records ethat match the TaskId
+        public async Task<List<TaskNote>> GetAllTaskNotesAsyncByTaskId(int taskId)
+        {
+            return await _database.Table<TaskNote>().Where(t => t.TaskId == taskId).ToListAsync();
+        }
+
         // Read (Get) TaskNote by ID
         public async Task<TaskNote> GetTaskNoteAsync(int taskNoteId)
         {

@@ -3,11 +3,12 @@ using MaintainHome.Database;
 using MaintainHome.Models;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace MaintainHome.Controls
 {
-    public partial class NotificationControl : ContentView
+    public partial class NotificationControl : ContentView, IListEditBaseControl
     {
         public int TaskId { get; set; }
 
@@ -26,8 +27,8 @@ namespace MaintainHome.Controls
         public static readonly BindableProperty SelectedItemProperty =
             BindableProperty.Create(nameof(SelectedItem), typeof(Notification), typeof(NotificationControl), default(Notification));
 
-        public static readonly BindableProperty NotificationLabelTextProperty =
-            BindableProperty.Create(nameof(NotificationLabelText), typeof(string), typeof(NotificationControl), "Notice Recipients (0)");
+        public static readonly BindableProperty ClassLabelTextProperty =
+            BindableProperty.Create(nameof(ClassLabelText), typeof(string), typeof(NotificationControl), "Notifications (0)");
 
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Heading section change when adding new task activity
@@ -48,7 +49,6 @@ namespace MaintainHome.Controls
 
         public static readonly BindableProperty IsCancelVisibleProperty =
           BindableProperty.Create(nameof(IsCancelVisible), typeof(bool), typeof(NotificationControl), false);
-
         public string SectionTitle
         {
             get => (string)GetValue(SectionTitleProperty);
@@ -79,10 +79,10 @@ namespace MaintainHome.Controls
             set => SetValue(CollectionSelectionModeProperty, value);
         }
 
-        public string NotificationLabelText
+        public string ClassLabelText
         {
-            get => (string)GetValue(NotificationLabelTextProperty);
-            set => SetValue(NotificationLabelTextProperty, value);
+            get => (string)GetValue(ClassLabelTextProperty);
+            set => SetValue(ClassLabelTextProperty, value);
         }
 
         public string Title
@@ -107,130 +107,188 @@ namespace MaintainHome.Controls
             InitializeComponent();
             BindingContext = this;
         }
-
-        public async Task LoadNotifications(int taskId)
+        public async Task LoadData(int taskId)
         {
-            TaskId = taskId; // Store the TaskId
-
-            var repository = new NotificationRepository();
-            var notifications = await repository.GetNotificationsAsyncByTaskId(taskId);
-
-            // Log the task ID and number of notifications fetched
-            System.Diagnostics.Debug.WriteLine($"Task ID: {taskId}, Fetched Notifications: {notifications.Count}");
-            foreach (var notification in notifications)
+            try
             {
-                System.Diagnostics.Debug.WriteLine($"Notify ID: {notification.TaskId}, Name: {notification.TargetName}, Email: {notification.TargetEmail}");
-            }
-            ItemsSource = new ObservableCollection<Notification>(notifications);
+                TaskId = taskId; // Store the TaskId
 
-            // Select the first item if the list has items. This will FORCE user to click the "Add" button if he wants to add a new notification!
-            if (ItemsSource.Count > 0) { SelectedItem = ItemsSource[0]; }
-
-            // Update the NotificationLabelText property
-            NotificationLabelText = $"Notification Recipients ({notifications.Count})";
-        }
-        private async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-        private async void OnSaveButtonClicked(object sender, EventArgs e)
-        {
-            if (!await ValidateNotificationForm())
-            {
-                return; // Stop if validation fails
-            }
-
-            // Confirm the user wants to update the task activity
-            var parentPage = GetParentPage();
-            if (parentPage != null)
-            {
-                bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to save the notification data?", "Yes", "No");
-                if (!confirm)
-                {
-                    return;
-                }
-            }
-
-            var repository = new NotificationRepository();
-            if (SelectedItem != null)                                          // SelectedItem should never be null, right. In fact
-                                                                               // this method should start by 
-            {
-                if (SelectedItem.NotificationId == 0)                                      // New task activity-- Add
-                {
-                    SelectedItem.TaskId = TaskId; // Assign the stored TaskId
-                    await repository.AddNotificationAsync(SelectedItem);
-                    ItemsSource.Add(SelectedItem);
-                }
-                else
-                {
-                    await repository.UpdateNotificationAsync(SelectedItem);   //Modified list-selected task activity -- Update
-
-                    // Refresh the collection
-                    var updatedNotification = SelectedItem;
-                    ItemsSource.Remove(SelectedItem);
-                    ItemsSource.Add(updatedNotification);
-                }
-
-                // Refresh the entire notification list
-                await LoadNotifications(TaskId);
-                                
-
-                // Call the OnCancelButtonClicked method
-                OnCancelButtonClicked(sender, e);
-
-                // Select the first item if the list has items. This will FORCE user to click the "Add" button if he wants to add a new notification!
-                if (ItemsSource.Count > 0) { SelectedItem = ItemsSource[0]; }
-            }
-        }
-        private void OnNewButtonClicked(object sender, EventArgs e)
-        {
-            SelectedItem = new Notification();
-            SectionTitle = "Add a New Notification";
-            IsAddVisible = false; IsDeleteVisible = false;
-            IsCancelVisible = true;
-
-            // Disable selection when adding a new item
-            CollectionSelectionMode = SelectionMode.None;
-
-        }
-        private async void OnDeleteButtonClicked(object sender, EventArgs e)
-        {
-            var parentPage = GetParentPage();
-            if (parentPage != null)
-            {
-                bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to DELETE the notification data?", "Yes", "No");
-                if (!confirm)
-                {
-                    return;
-                }
-            }
-
-            if (SelectedItem != null)
-            {
                 var repository = new NotificationRepository();
-                await repository.DeleteNotificationAsync(SelectedItem.NotificationId);
-                await parentPage.DisplayAlert("Confirm Update", "The Notification record has been deleted.", "OK");
+                var notifications = await repository.GetNotificationsAsyncByTaskId(taskId);
 
-                ItemsSource.Remove(SelectedItem); SelectedItem = null;
-                // Refresh the entire notification list
-                await LoadNotifications(TaskId);
+                // Log the task ID and number of notifications fetched
+                System.Diagnostics.Debug.WriteLine($"Task ID: {taskId}, Fetched Notifications: {notifications.Count}");
+                foreach (var notification in notifications)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Notify ID: {notification.TaskId}, Name: {notification.TargetName}, Email: {notification.TargetEmail}");
+                }
+                ItemsSource = new ObservableCollection<Notification>(notifications);
+
+                // Select the first item if the list has items
+                if (ItemsSource.Count > 0) { SelectedItem = ItemsSource[0]; }
+
+                // Update the ClassLabelText property
+                ClassLabelText = $"Notifications ({notifications.Count})";
             }
-
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading notifications: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while loading notifications.", "OK");
+            }
         }
-        private async void OnCancelButtonClicked(object sender, EventArgs e)
+
+        public async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedItem = null;
-            SectionTitle = "View/Edit Notification";
-            IsAddVisible = true; IsDeleteVisible = true;
-            IsCancelVisible = false;
-
-            // Re-enable selection when canceling add
-            CollectionSelectionMode = SelectionMode.Single;
-
-            // Refresh the entire notification list
-            await LoadNotifications(TaskId);
+            // Implementation here if needed
         }
-        private Page GetParentPage()
+        public void OnNewButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectedItem = new Notification();
+                SectionTitle = "Add a New Notification";
+                IsAddVisible = false; IsDeleteVisible = false;
+                IsCancelVisible = true;
+
+                // Disable selection when adding a new item
+                CollectionSelectionMode = SelectionMode.None;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error creating new notification: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Error", "An error occurred while creating a new notification.", "OK");
+                });
+            }
+        }
+
+        public void OnSaveButtonClicked(object sender, EventArgs e)
+        {
+            // Call the async method and handle it properly
+            OnSaveButtonClickedAsync(sender, e).ConfigureAwait(false);
+        }
+        public async Task OnSaveButtonClickedAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!await ValidateForm())
+                {
+                    return; // Stop if validation fails
+                }
+
+                // Confirm the user wants to update the task activity
+                var parentPage = GetParentPage();
+                if (parentPage != null)
+                {
+                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to save the notification data?", "Yes", "No");
+                    if (!confirm)
+                    {
+                        return;
+                    }
+                }
+
+                var repository = new NotificationRepository();
+                if (SelectedItem != null)
+                {
+                    if (SelectedItem.NotificationId == 0) // New notification
+                    {
+                        SelectedItem.TaskId = TaskId; // Assign the stored TaskId
+                        await repository.AddNotificationAsync(SelectedItem);
+                        ItemsSource.Add(SelectedItem);
+                    }
+                    else // Modified notification
+                    {
+                        await repository.UpdateNotificationAsync(SelectedItem);
+
+                        // Refresh the collection
+                        var updatedNotification = SelectedItem;
+                        ItemsSource.Remove(SelectedItem);
+                        ItemsSource.Add(updatedNotification);
+                    }
+
+                    // Refresh the entire notification list
+                    await LoadData(TaskId);
+
+                    // Call the OnCancelButtonClicked method
+                    OnCancelButtonClicked(sender, e);
+
+                    // Select the first item if the list has items
+                    if (ItemsSource.Count > 0) { SelectedItem = ItemsSource[0]; }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error saving notification: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while saving the notification.", "OK");
+            }
+        }
+
+
+        public void OnDeleteButtonClicked(object sender, EventArgs e)
+        {
+            // Call the async method and handle it properly
+            OnDeleteButtonClickedAsync(sender, e).ConfigureAwait(false);
+        }
+        public async Task OnDeleteButtonClickedAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                var parentPage = GetParentPage();
+                if (parentPage != null)
+                {
+                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to DELETE the notification data?", "Yes", "No");
+                    if (!confirm)
+                    {
+                        return;
+                    }
+                }
+
+                if (SelectedItem != null)
+                {
+                    var repository = new NotificationRepository();
+                    await repository.DeleteNotificationAsync(SelectedItem.NotificationId);
+                    await parentPage.DisplayAlert("Confirm Update", "The Notification record has been deleted.", "OK");
+
+                    ItemsSource.Remove(SelectedItem); SelectedItem = null;
+                    // Refresh the entire notification list
+                    await LoadData(TaskId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting notification: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while deleting the notification.", "OK");
+            }
+        }
+
+        public async void OnCancelButtonClicked(object sender, EventArgs e)
+        {
+            // Call the async method and handle it properly
+            OnCancelButtonClickedAsync(sender, e).ConfigureAwait(false);
+        }
+        public async Task OnCancelButtonClickedAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectedItem = null;
+                SectionTitle = "View/Edit Notification";
+                IsAddVisible = true; IsDeleteVisible = true;
+                IsCancelVisible = false;
+
+                // Re-enable selection when canceling add
+                CollectionSelectionMode = SelectionMode.Single;
+
+                // Refresh the entire notification list
+                await LoadData(TaskId);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error canceling notification: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while canceling the notification action.", "OK");
+            }
+        }
+        public Page GetParentPage()
         {
             Element element = this;
             while (element != null)
@@ -243,7 +301,8 @@ namespace MaintainHome.Controls
             }
             return null;
         }
-        private async Task<bool> ValidateNotificationForm()
+
+        public async Task<bool> ValidateForm()
         {
             if (SelectedItem == null)
             {
@@ -269,7 +328,8 @@ namespace MaintainHome.Controls
 
             return true;
         }
-        private async Task DisplayAlert(string title, string message, string cancel)
+
+        public async Task DisplayAlert(string title, string message, string cancel)
         {
             var parentPage = GetParentPage();
             if (parentPage != null)
@@ -277,9 +337,8 @@ namespace MaintainHome.Controls
                 await parentPage.DisplayAlert(title, message, cancel);
             }
         }
-
-        
-
-
     }
 }
+
+
+

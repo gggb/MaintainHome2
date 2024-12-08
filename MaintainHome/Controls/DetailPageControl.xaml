@@ -65,11 +65,15 @@
                     <Button Text="Add" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnNewButtonClicked" 
                             IsVisible="{Binding IsAddVisible, Source={x:Reference DetailControl}}"/>
+
                     <Button Text="Save" FontFamily="RobotoRegular" FontSize="15" 
-                            Clicked="OnSaveButtonClicked"/>
+                            Clicked="OnSaveButtonClicked"></Button>
+                            <!-- IsVisable="{Binding IsSaveVisible, Source={x:Reference DetailControl}}"/> -->
+
                     <Button Text="Delete" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnDeleteButtonClicked" 
                             IsVisible="{Binding IsDeleteVisible, Source={x:Reference DetailControl}}"/>
+                    
                     <Button Text="Cancel" FontFamily="RobotoRegular" FontSize="15" 
                             Clicked="OnCancelButtonClicked" 
                             IsVisible="{Binding IsCancelVisible, Source={x:Reference DetailControl}}"/> 

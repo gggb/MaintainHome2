@@ -23,10 +23,18 @@ namespace MaintainHome.Models
         public string? Description { get; set; }
         public string? Status { get; set; }
         public int FrequencyDays { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public String Priority { get; set; }
         [Indexed] public int UserId { get; set; }
         [Indexed] public int CategoryId { get; set; }
+        public bool ReminderSent { get; set; }
+        public bool OverdueAlertSent { get; set; }
+        public bool CompletionNotificationSent { get; set; }
+        public bool RepeatedOverDueAlertdScheduled { get; set; }
+
+
+
+
         //[Indexed] public int TaskHelpsId { get; set; }
 
         public override async Task<bool> Add()
