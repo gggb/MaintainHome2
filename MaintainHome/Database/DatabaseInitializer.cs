@@ -35,6 +35,7 @@ namespace MaintainHome.Database
             await database.DropTableAsync<Category>();
             await database.DropTableAsync<TaskHelp>();
             await database.DropTableAsync<TaskNote>();
+            await database.DropTableAsync<PlugInNotification>();
 
 
             await database.CreateTableAsync<User>();
@@ -46,6 +47,7 @@ namespace MaintainHome.Database
             await database.CreateTableAsync<Category>();
             await database.CreateTableAsync<TaskHelp>();
             await database.CreateTableAsync<TaskNote>();
+            await database.CreateTableAsync<PlugInNotification>();
 
 
             // Reset the auto-increment sequence
@@ -58,6 +60,7 @@ namespace MaintainHome.Database
             await database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name='TaskHelp'");
             await database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name='Category'");
             await database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name='TaskNote'");
+            await database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name='PlugInNotification'");
 
             await LoadInitialUser(database);
             await LoadInitialCategories(database);
@@ -68,12 +71,23 @@ namespace MaintainHome.Database
             await LoadInitialNotification(database);
             await LoadInitialTaskHelp(database);
             await LoadInitialTaskNote(database);
+            await WarmUpDatabase();
 
             //await EvaluateLoadedTaskForNotifications();
         }
 
-
-        private static async Task EvaluateLoadedTaskForNotifications()
+        public static async Task WarmUpDatabase()
+        {
+            var notificationRepository = new PlugInNotificationRepository();
+            var dummyCheck = await notificationRepository.GetPlugInNotificationByTaskIdAsync(-1);   // Perform a dummy read
+            Debug.WriteLine($"Warm-up check result: {dummyCheck}");
+        }
+        
+            
+            
+            
+            
+            private static async Task EvaluateLoadedTaskForNotifications()
         {
             // Set NotifyTime to 36 months from now
             DateTime notifyTime = DateTime.Now.AddSeconds(15);

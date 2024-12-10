@@ -62,6 +62,7 @@ namespace MaintainHome.Database
 
 
         // Update Task
+
         public async Task<bool> UpdateTaskAsync(Tasks task)
         {
             return await _database.UpdateAsync(task) > 0;
