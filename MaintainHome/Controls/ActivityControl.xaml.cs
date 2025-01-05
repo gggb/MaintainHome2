@@ -1,3 +1,4 @@
+//using Android.Text;
 using MaintainHome.Database;
 using MaintainHome.Models;
 using Microsoft.Maui.Controls;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MaintainHome.Controls
 {
-    public partial class DetailPageControl : ContentView, IListEditBaseControl
+    public partial class ActivityConrol : ContentView, IListEditBaseControl
     {
         public int TaskId { get; set; }
 
@@ -21,34 +22,34 @@ namespace MaintainHome.Controls
         //=======================
 
         public static readonly BindableProperty TitleProperty =
-            BindableProperty.Create(nameof(Title), typeof(string), typeof(DetailPageControl), default(string));
+            BindableProperty.Create(nameof(Title), typeof(string), typeof(ActivityConrol), default(string));
 
         public static readonly BindableProperty ItemsSourceProperty =
-            BindableProperty.Create(nameof(ItemsSource), typeof(ObservableCollection<TaskActivity>), typeof(DetailPageControl), new ObservableCollection<TaskActivity>());
+            BindableProperty.Create(nameof(ItemsSource), typeof(ObservableCollection<TaskActivity>), typeof(ActivityConrol), new ObservableCollection<TaskActivity>());
 
         public static readonly BindableProperty SelectedItemProperty =
-            BindableProperty.Create(nameof(SelectedItem), typeof(TaskActivity), typeof(DetailPageControl), default(TaskActivity));
+            BindableProperty.Create(nameof(SelectedItem), typeof(TaskActivity), typeof(ActivityConrol), default(TaskActivity));
 
         public static readonly BindableProperty ClassLabelTextProperty = 
-            BindableProperty.Create(nameof(ClassLabelText), typeof(string), typeof(DetailPageControl), "Activities (0)");
+            BindableProperty.Create(nameof(ClassLabelText), typeof(string), typeof(ActivityConrol), "Activities (0)");
         //++++++++++++++++++++++++++++++++++++++
         // Heading section change when adding new task activity
         // Bindable property for CollectionView SelectionMode
         public static readonly BindableProperty CollectionSelectionModeProperty =
-            BindableProperty.Create(nameof(CollectionSelectionMode), typeof(SelectionMode), typeof(DetailPageControl), SelectionMode.Single);
+            BindableProperty.Create(nameof(CollectionSelectionMode), typeof(SelectionMode), typeof(ActivityConrol), SelectionMode.Single);
 
 
         public static readonly BindableProperty SectionTitleProperty =
-            BindableProperty.Create(nameof(SectionTitle), typeof(string), typeof(DetailPageControl), "View/Edit Task Activity");
+            BindableProperty.Create(nameof(SectionTitle), typeof(string), typeof(ActivityConrol), "View/Edit Task Activity");
 
         public static readonly BindableProperty IsAddVisibleProperty =
-            BindableProperty.Create(nameof(IsAddVisible), typeof(bool), typeof(DetailPageControl), true);
+            BindableProperty.Create(nameof(IsAddVisible), typeof(bool), typeof(ActivityConrol), true);
 
         public static readonly BindableProperty IsDeleteVisibleProperty =
-            BindableProperty.Create(nameof(IsDeleteVisible), typeof(bool), typeof(DetailPageControl), true);
+            BindableProperty.Create(nameof(IsDeleteVisible), typeof(bool), typeof(ActivityConrol), true);
 
         public static readonly BindableProperty IsCancelVisibleProperty =
-          BindableProperty.Create(nameof(IsCancelVisible), typeof(bool), typeof(DetailPageControl), false);
+          BindableProperty.Create(nameof(IsCancelVisible), typeof(bool), typeof(ActivityConrol), false);
 
         public string SectionTitle
         {
@@ -102,7 +103,7 @@ namespace MaintainHome.Controls
             set => SetValue(SelectedItemProperty, value);
         }
 
-        public DetailPageControl()
+        public ActivityConrol()
         {
             InitializeComponent();
             BindingContext = this;
@@ -146,11 +147,11 @@ namespace MaintainHome.Controls
             // Placeholder for selection changed logic
         }
 
-        public void OnNewButtonClicked(object sender, EventArgs e)                          // may want to consider changing to "Async Task" due to "await"
+        public void OnNewButtonClicked(object sender, EventArgs e)                          // Change view/edit form to blank and deselects from list.
         {
             try
             {
-                SelectedItem = new TaskActivity();
+                SelectedItem = new TaskActivity {TaskId = TaskId};
                 SectionTitle = "Add a New Task Activity";
                 IsAddVisible = false; IsDeleteVisible = false;
                 IsCancelVisible = true;
@@ -199,7 +200,7 @@ namespace MaintainHome.Controls
                         return;
                     }
                 }
-
+                //SelectedItem.TaskId = TaskId;
                 if (SelectedItem != null)  // SelectedItem should never be null
                 {
                     var repository = new TaskActivityRepository();
@@ -212,6 +213,13 @@ namespace MaintainHome.Controls
                     {
                         await repository.UpdateTaskActivityAsync(SelectedItem);
                     }
+
+                    
+                    // Clear the binding context or set it to a new note ESPECIALLY when the last note is deleted.
+                    //SelectedItem = null;
+                    //BindingContext = new TaskActivity();
+                    
+
 
                     // Refresh the entire task activity list
                     await LoadData(TaskId);
@@ -232,6 +240,12 @@ namespace MaintainHome.Controls
         {
             try
             {
+                if(SelectedItem == null)
+                {
+                    await DisplayAlert("Delete Error", "There is no activity to Delete", "OK");
+                    return;
+                }
+
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
@@ -246,11 +260,19 @@ namespace MaintainHome.Controls
                 {
                     var repository = new TaskActivityRepository();
                     await repository.DeleteTaskActivityAsync(SelectedItem.Id);
-                    ItemsSource.Remove(SelectedItem);
                     await parentPage.DisplayAlert("Confirm Update", "The Task Activity record has been deleted.", "OK");
+
+                    // Clear the binding context or set it to a new note ESPECIALLY when the last note is deleted.
+                    ItemsSource.Remove(SelectedItem);
+                    SelectedItem = null;
+                    BindingContext = new TaskActivity();
 
                     // Refresh the entire task activity list
                     await LoadData(TaskId);
+                }
+                else
+                { 
+                    await parentPage.DisplayAlert("Delete Error", "The application cannot DELETE a null tasks!", "OK");  // Should NEVER Occur!!!
                 }
             }
             catch (Exception ex)

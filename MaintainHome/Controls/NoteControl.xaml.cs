@@ -11,8 +11,8 @@ namespace MaintainHome.Controls
     {
         public int TaskId { get; set; }
 
-        //public ObservableCollection<string> TypeOptions { get; set; } =
-        //    new ObservableCollection<string> { "Complaint", "Improvement", "Observation", "Other" };
+        public ObservableCollection<string> TypeOptions { get; set; } =
+            new ObservableCollection<string> { "Complaint", "Improvement", "Observation", "Other" };
 
         public static readonly BindableProperty TitleProperty =
             BindableProperty.Create(nameof(Title), typeof(string), typeof(NoteControl), default(string));
@@ -143,7 +143,8 @@ namespace MaintainHome.Controls
         {
             try
             {
-                SelectedItem = new TaskNote();
+                //SelectedItem = new TaskNote();
+                SelectedItem = new TaskNote { TaskId = TaskId };
                 SectionTitle = "Add a New Task Note";
                 IsAddVisible = false; IsDeleteVisible = false;
                 IsCancelVisible = true;
@@ -223,6 +224,12 @@ namespace MaintainHome.Controls
         {
             try
             {
+                if (SelectedItem == null)
+                {
+                    await DisplayAlert("Delete Error", "There is no note to Delete", "OK");
+                    return;
+                }
+
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
@@ -239,6 +246,12 @@ namespace MaintainHome.Controls
                     await repository.DeleteTaskNoteAsync(SelectedItem.NoteId);
                     ItemsSource.Remove(SelectedItem);
                     await parentPage.DisplayAlert("Confirm Update", "The Task note record has been deleted.", "OK");
+
+                    // Clear the binding context or set it to a new note ESPECIALLY when the last note is deleted.
+                    NoteType.SelectedItem = null;
+                    NoteDescrEdit.Text = string.Empty;
+                    SelectedItem = null;
+                    BindingContext = new TaskNote();
 
                     // Refresh the entire task note list
                     await LoadData(TaskId);

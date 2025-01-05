@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MaintainHome.Models;
 using SQLite;
@@ -14,19 +12,43 @@ namespace MaintainHome.Database
 
         public TasksRepository()
         {
-            _database = DatabaseConnection.GetConnectionAsync().Result;
+            try
+            {
+                _database = DatabaseConnection.GetConnectionAsync().Result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database connection: {ex.Message}");
+                throw;
+            }
         }
 
         // Create (Add) Task
-        public async Task<bool> AddTaskAsync(Tasks tasks)       //AddTaskAsync
+        public async Task<bool> AddTaskAsync(Tasks tasks)
         {
-            return await _database.InsertAsync(tasks) > 0;
+            try
+            {
+                return await _database.InsertAsync(tasks) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding task: {ex.Message}");
+                return false;
+            }
         }
 
         // Read (Get) Task by ID
         public async Task<Tasks> GetTaskAsync(int taskId)
         {
-            return await _database.FindAsync<Tasks>(taskId);
+            try
+            {
+                return await _database.FindAsync<Tasks>(taskId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving task with ID {taskId}: {ex.Message}");
+                return null;
+            }
         }
 
         // Get all Tasks
@@ -35,48 +57,86 @@ namespace MaintainHome.Database
             try
             {
                 // Fetch all tasks where status is not "closed" using raw SQL query
-                return await _database.QueryAsync<Tasks>("SELECT * FROM Tasks WHERE Status != ?", "closed");
+                //return await _database.QueryAsync<Tasks>("SELECT * FROM Tasks WHERE Status != ?", "closed");
+                return await _database.QueryAsync<Tasks>("SELECT * FROM Tasks");
             }
             catch (Exception ex)
             {
-                // Log or handle the exception as needed
                 Console.WriteLine($"Error fetching open tasks: {ex.Message}");
                 return new List<Tasks>();
             }
         }
 
-        //public async Task<List<Tasks>> GetAllOpenTasksAsync()
-        //{
-        //    try
-        //    {
-        //        // Fetch all tasks where status is not "closed" using raw SQL query
-        //        return await _database.QueryAsync<Tasks>("SELECT * FROM Tasks WHERE Status != ?", "closed");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log or handle the exception as needed
-        //        Console.WriteLine($"Error fetching open tasks: {ex.Message}");
-        //        return new List<Tasks>();
-        //    }
-        //}
-
-
         // Update Task
-
         public async Task<bool> UpdateTaskAsync(Tasks task)
         {
-            return await _database.UpdateAsync(task) > 0;
+            try
+            {
+                return await _database.UpdateAsync(task) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating task with ID {task.Id}: {ex.Message}");
+                return false;
+            }
         }
 
         // Delete Task
         public async Task<bool> DeleteTaskAsync(int taskId)
         {
-            var task = await _database.FindAsync<Tasks>(taskId);
-            if (task != null)
+            try
             {
-                return await _database.DeleteAsync(taskId) > 0;
+                var task = await _database.FindAsync<Tasks>(taskId);
+                if (task != null)
+                {
+                    return await _database.DeleteAsync(task) > 0;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting task with ID {taskId}: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<List<Tasks>> SearchTasksAsync(string status, string priority, int? userId, int? categoryId, DateTime? dueDateStart, DateTime? dueDateEnd)
+        {
+            try
+            {
+                var parameters = new List<object>();
+                var query = "SELECT * FROM Tasks WHERE 1=1";
+                if (!string.IsNullOrEmpty(status) && status != "None")
+                {
+                    query += " AND Status = ?"; parameters.Add(status);
+                }
+                if (!string.IsNullOrEmpty(priority) && priority != "None")
+                {
+                    query += " AND Priority = ?"; parameters.Add(priority);
+                }
+                if (userId.HasValue)
+                {
+                    query += " AND UserId = ?"; parameters.Add(userId);
+                }
+                if (categoryId.HasValue)
+                {
+                    query += " AND CategoryId = ?"; parameters.Add(categoryId);
+                }
+                if (dueDateStart.HasValue)
+                {
+                    query += " AND DueDate >= ?"; parameters.Add(dueDateStart.Value);
+                }
+                if (dueDateEnd.HasValue)
+                {
+                    query += " AND DueDate <= ?"; parameters.Add(dueDateEnd.Value);
+                }
+                return await _database.QueryAsync<Tasks>(query, parameters.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error searching tasks: {ex.Message}");
+                return new List<Tasks>();
+            }
         }
     }
 }

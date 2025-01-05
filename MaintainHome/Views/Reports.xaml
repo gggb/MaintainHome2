@@ -1,0 +1,86 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MaintainHome.Views.Reports">
+
+    <ScrollView Orientation="Both">
+        <StackLayout Padding="10">
+            <Label Text="Reports" FontSize="24" HorizontalOptions="Center" Margin="0,0,0,10"/>
+
+            <!-- Buttons for Report Selection -->
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10" Margin="0,0,0,20">
+                <Button Text="Month" Clicked="OnMonthClicked" CommandParameter="Month" />
+                <Button Text="3 Month" Clicked="OnThreeMonthsClicked" CommandParameter="3Month" />
+                <Button Text="6 Month" Clicked="OnSixMonthsClicked" CommandParameter="6Month" />
+                <Button Text="Year" Clicked="OnYearClicked" CommandParameter="Year" />
+                <Button Text="Dump" Clicked="OnTaskDumpClicked" />
+            </StackLayout>
+            
+            <!-- Report Heading -->
+            <Label x:Name="ReportDate" />
+            <Label x:Name="ReportName" FontSize="24" FontAttributes="Bold"/>
+            <Label x:Name="ReportDateRange" FontSize="14" HorizontalOptions="Center" Margin="0,0,0,20"/>
+            <BoxView HeightRequest="2" BackgroundColor="Gray" HorizontalOptions="FillAndExpand" Margin="0,-10,0,20"/>
+
+            <!-- Task Schedule Report View -->
+            <ContentView x:Name="TaskScheduleView" IsVisible="False">
+                <CollectionView x:Name="TaskScheduleCollectionView" Margin="0">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Padding="5" >
+                                <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold"/>
+
+                                <HorizontalStackLayout>
+                                    <Label Text="DueDate: " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold"/>
+                                    <Label Text="{Binding DueDate, StringFormat='{0:MM/dd/yyyy}'}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+                                
+                                <HorizontalStackLayout>
+                                    <Label Text="Status: " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold" />
+                                    <Label Text="{Binding Status}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout>
+                                    <Label Text="Reoccurance (days): " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold"/>
+                                    <Label Text="{Binding FrequencyDays}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout>
+                                    <Label Text="Category: " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold" />
+                                    <Label Text="{Binding CategoryId}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout>
+                                    <Label Text="CreateDate: " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold" />
+                                    <Label Text="{Binding CreatedDate, StringFormat='{0:MM/dd/yyyy}'}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout>
+                                    <Label Text="ModifiedDate: " FontSize="14" Margin="10,0,0,0" FontAttributes="Bold" />
+                                    <Label Text="{Binding ModifiedDate, StringFormat='{0:MM/dd/yyyy}'}" FontSize="14" Margin="0,0,0,0"/>
+                                </HorizontalStackLayout>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </ContentView>
+
+            <!-- Task Dump Report View -->
+            <ContentView x:Name="TaskDumpView" IsVisible="False">
+                <CollectionView x:Name="TaskDumpCollectionView" Margin="0">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Padding="5" Margin="0,-10,0,0">
+                                <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                                <!--
+                                <Label Text="{Binding DueDate, StringFormat='{0:MM/dd/yyyy}'}" FontSize="14" />
+                                <Label Text="{Binding Status}" FontSize="14" />
+                                -->
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </ContentView>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
+

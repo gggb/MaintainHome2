@@ -11,13 +11,21 @@ namespace MaintainHome.Database
 
         public static async Task<SQLiteAsyncConnection> GetConnectionAsync()
         {
-            if (_database == null)
+            try
             {
-                var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "MaintainHome.db3");
-                Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
-                _database = new SQLiteAsyncConnection(databasePath);
+                if (_database == null)
+                {
+                    var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "MaintainHome.db3");
+                    Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
+                    _database = new SQLiteAsyncConnection(databasePath);
+                }
+                return _database;
             }
-            return _database;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating database connection: {ex.Message}");
+                throw;
+            }
         }
     }
 }

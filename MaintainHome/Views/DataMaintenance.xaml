@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MaintainHome.Views.DataMaintenance"
+             Title="Database Maintenance">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Back" IconImageSource="back_icon.png" Command="{Binding NavigateBackCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <StackLayout Padding="10">
+            <!-- Backup Section -->
+            <Frame BorderColor="LightGray" Padding="10" Margin="0, 10, 0, 0">
+                <StackLayout>
+                    <Label Text="Backup Database" FontSize="Large" FontAttributes="Bold" />
+                    <Button Text="Start Backup" Clicked="OnBackupClicked" />
+                    <Label x:Name="BackupStatusLabel" Text="Backup Status: Not started" TextColor="Gray" Margin="0, 10, 0, 0" />
+                    <ScrollView HeightRequest="{Binding BackupLogHeight}">
+                        <Editor x:Name="BackupLogEditor" IsReadOnly="True" />
+                    </ScrollView>
+                </StackLayout>
+            </Frame>
+
+            <!-- Restore Section -->
+            <Frame BorderColor="LightGray" Padding="10" Margin="0, 10, 0, 0">
+                <StackLayout>
+                    <Label Text="Restore Data" FontSize="Large" FontAttributes="Bold" />
+                    <Button Text="Start Restore" Clicked="OnRestoreClicked" />
+                    <Label x:Name="RestoreStatusLabel" Text="Restore Status: Not started" TextColor="Gray" Margin="0, 10, 0, 0" />
+                    <ScrollView HeightRequest="{Binding RestoreLogHeight}">
+                        <Editor x:Name="RestoreLogEditor" IsReadOnly="True" />
+                    </ScrollView>
+                </StackLayout>
+            </Frame>
+
+            <!-- Data Integrity Check Section -->
+            <Frame BorderColor="LightGray" Padding="10" Margin="0, 10, 0, 0">
+                <StackLayout>
+                    <Label Text="Data Integrity Check" FontSize="Large" FontAttributes="Bold" />
+                    <Button Text="Start Integrity Check" Clicked="OnIntegrityCheckClicked" />
+                    <Label x:Name="IntegrityCheckStatusLabel" Text="Integrity Check Status: Not started" TextColor="Gray" Margin="0, 10, 0, 0" />
+                    <ScrollView HeightRequest="55">
+                        <Editor x:Name="IntegrityCheckLogEditor" IsReadOnly="True" />
+                    </ScrollView>
+                </StackLayout>
+            </Frame>
+
+            <!-- VACUUM Section -->
+            <Frame BorderColor="LightGray" Padding="10" Margin="0, 10, 0, 0">
+                <StackLayout>
+                    <Label Text="VACUUM Procedure" FontSize="Large" FontAttributes="Bold" />
+                    <Button Text="Start VACUUM" Clicked="OnVacuumClicked" />
+                    <Label x:Name="VacuumStatusLabel" Text="VACUUM Status: Not started" TextColor="Gray" Margin="0, 10, 0, 0" />
+                    <ScrollView HeightRequest="55">
+                        <Editor x:Name="VacuumLogEditor" IsReadOnly="True" />
+                    </ScrollView>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

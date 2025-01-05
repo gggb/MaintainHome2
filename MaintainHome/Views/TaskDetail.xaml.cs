@@ -1,13 +1,9 @@
 using MaintainHome.Models;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Microsoft.Maui.ApplicationModel;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
+
 using MaintainHome.Database;
 using Plugin.LocalNotification;
-//using Windows.Networking.PushNotifications;
-//using MediaToolbox;
 
 namespace MaintainHome.Views
 {   
@@ -20,7 +16,7 @@ namespace MaintainHome.Views
 
         public ObservableCollection<string> PriorityOptions { get; set; } =
             new ObservableCollection<string> { "Low", "Medium", "Urgent" };
-      
+
         public TaskDetail(Tasks task)
         {
             InitializeComponent();
@@ -66,22 +62,27 @@ namespace MaintainHome.Views
                     await DisplayAlert("Error", "An error occurred while initializing the task details.", "OK");
                 });
             }
-        }    
-        
-
+        }            
         public void OnSaveButtonClicked(object sender, EventArgs e)
         {
             // Call the async method and handle it properly
             OnSaveButtonClickedAsync(sender, e).ConfigureAwait(false);
         }
-
         public async Task OnSaveButtonClickedAsync(object sender, EventArgs e)
-        {
+        {           
             //Ensure _task is not null
             if (_task == null)
             {
                 return;
             }
+
+            // Save confirmation message
+            bool answer = await DisplayAlert("Confirm Action", "Do you want to schedule this task?", "Yes", "No");
+            if (!answer)
+            {
+                return; // If "No" is selected, return and do not proceed further
+            }
+
 
             // Validate TaskDetail edit entries.
             var task = (Tasks)BindingContext;
@@ -90,19 +91,29 @@ namespace MaintainHome.Views
             // Save edited TaskDetail data, if validation successful
             if (validationResults.Count == 0)
             {
-                // Update Tasks table  
-                var repository = new TasksRepository();
-                bool goodUpdate = await repository.UpdateTaskAsync(task);
-                if (goodUpdate)
+                // Initialize repository for add or updating tasks                                   // Perhaps, this task update should be moved to the end to 
+                var repository = new TasksRepository();                                              // prevent dbl save confirmation alerts.
+                bool goodUpdate;
+                if (task.Id == 0)   // task is new
                 {
-                    await DisplayAlert("Confirm Update", "The Task record has been successfully updated.", "OK");
+                    task.UserId = App.CurrentUser.UserId;
+                    goodUpdate = await repository.AddTaskAsync(task);
                 }
                 else
                 {
-                    await DisplayAlert("Error", "Failed to update the task.", "OK"); return; // Exit if the update fails
+                    // Update existing task
+                    goodUpdate = await repository.UpdateTaskAsync(task);
                 }
 
-
+                if (goodUpdate)
+                {
+                    await DisplayAlert("Confirm Update #1", "The Task record has been successfully updated.", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("Error", "Failed to update the task. Notification not sent.", "OK"); 
+                    return; // Exit if the update fails WITHOUT SENDING NOTIFICATION.
+                }
                 // Ensure notification permissions are granted. It is perfered to ensure permission is granted before
                 // every send (although permission was requested during app startup).                   
                 bool isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
@@ -111,152 +122,127 @@ namespace MaintainHome.Views
                     await LocalNotificationCenter.Current.RequestNotificationPermission();
                 }
 
-                //Cancel existing notification for this task (Both, the PlugInNotification table record and the notification sent to Android) 
-                var notificationRepository = new PlugInNotificationRepository();
-                var existingNotification = await notificationRepository.GetPlugInNotificationByTaskIdAsync(task.Id);
-                Debug.WriteLine($"**********PluginNotification Removal Section*****: {existingNotification}");
-                if (existingNotification != null)
-                {
-                    Debug.WriteLine($"**********Previous notification found: {existingNotification.NotificationId}");
-                    bool wasNotificationCanceled = LocalNotificationCenter.Current.Cancel(existingNotification.NotificationId);
-                    Debug.WriteLine($"**********Was notification canceled: {wasNotificationCanceled}");
-                    if (!wasNotificationCanceled)
-                    {
-                        Debug.WriteLine($"*********Failed to cancel notification with ID: {existingNotification.NotificationId}");
-                    }
+                // Cancel existing task notification and delete associated record from the PlugInNotification table.
 
-                    bool dbNotificationDeleteded = await notificationRepository.DeletePlugInNotificationAsync(existingNotification.NotificationId);
-                    Debug.WriteLine($"*************Was notification removed from Plugin table: {dbNotificationDeleteded}");
+                // NOTE: Only one notification record should be in the PlugInNotification table (because only one "on due-date" notification is sent) but the 'get'
+                // operation retrieves multiple records and puts them in a list so as to validate the logic. There should NEVER be more than one validation record
+                // in the database table per task.Id.
+                var notificationRepository = new PlugInNotificationRepository();
+                var existingNotifications = await notificationRepository.GetPlugInNotificationsByTaskIdAsync(task.Id);
+                Debug.WriteLine($"**********PluginNotification Removal Section*****: {existingNotifications}");
+                int _count = 0;
+                if (existingNotifications != null && existingNotifications.Count > 0)
+                {
+                    foreach (var notification in existingNotifications)  //TaskHelpRepository should only be one!
+                    {
+                        Debug.WriteLine($"**********Previous {existingNotifications.Count} notification(s) found: {notification.NotificationId}");
+                        bool wasNotificationCanceled = LocalNotificationCenter.Current.Cancel(notification.NotificationId);
+
+                        Debug.WriteLine($"**********Was notification ({notification.NotificationId}) canceled from Plugin: {wasNotificationCanceled}");
+                        if (!wasNotificationCanceled)
+                        {
+                            Debug.WriteLine($"*********Failed to cancel notification with ID: {notification.NotificationId}");
+                        }
+
+                        bool dbNotificationDeleteded = await notificationRepository.DeletePlugInNotificationAsync(notification.NotificationId);
+                        Debug.WriteLine($"**************Was notification ({notification.NotificationId}) canceled from database: {dbNotificationDeleteded}");
+                    }
                 }
                 Debug.WriteLine($"**********PluginNotification Removal Ended********************");
 
                 // Define NotifyTime based on debug or release mode
                 DateTime notifyTime;
-                DateTime preNotifyTime;
+                
 
-#if DEBUG
-                preNotifyTime = DateTime.Now.AddSeconds(10);
-                notifyTime = DateTime.Now.AddSeconds(20);
+#if DEBUG               
+                notifyTime = DateTime.Now.AddSeconds(10);   // for testng purposes, the tester can't wait until DueDate to test the notification, so it is sent in 20 seconds.
 
 #else
-                if (task.DueDate.HasValue)
+                if (task.DueDate.HasValue)    // In production, notification will be sent immediately but will diplay in android on DueDate at 9:00am.
                 {
                     task.DueDate = new DateTime(task.DueDate.Value.Year, task.DueDate.Value.Month, task.DueDate.Value.Day, 9, 0, 0);
-                    notifyTime = task.DueDate ?? DateTime.Now;
-                    preNotifyTime = task.DueDate.Value.AddDays(-3);
+                    notifyTime = DateTime.Now; 
                 }
                 else
                 {
                     notifyTime = DateTime.Now; 
-                    preNotifyTime = DateTime.Now;
                 }
 #endif
-
-
-                // Handle notifications (anew) based on task status
+                // Handle notifications (anew) based on task status. 
                 if (task.Status == "Scheduled")
                 {
-                    // Schedule new Pre-alert notification based on DueDate - 3 days
-                    var notifyRequestPreAlert = new NotificationRequest     //Prepare message to be sent.
-                    {
-                        NotificationId = task.Id,
-                        Title = task.Title,
-                        Description = $"A task, {task.Title}, is scheduled in three days.",
-                        Schedule = new NotificationRequestSchedule { NotifyTime = preNotifyTime },
-                    };
-                    bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(notifyRequestPreAlert);      //Send Reminder Message-- scheduled for DueDate  
-                    Debug.WriteLine($"************Did pre-alert request execute successfully: {wasNotifyRequestSuccessful} Notice scheduled to display: {preNotifyTime}");
-
-
-                    // Update description and time for the due date reminder
-                    var notifyRequest = new NotificationRequest     //Prepare message to be sent.
-                    {
-                        NotificationId = task.Id,
-                        Title = task.Title,
-                        Description = $"A task, {task.Title}, is scheduled on {task.DueDate}.",
-                        Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime },
-                    };
-                    wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(notifyRequest);      //Send pre-alert Message-- scheduled for DueDate -3 days
-                    Debug.WriteLine($"*************Did notifyrequest execute successfully: {wasNotifyRequestSuccessful}  Notice scheduled to display: {notifyTime}");
-
-                    // Update PluginNotification table
-                    Debug.WriteLine($"**********PluginNotification Update Section********************");
-                    var newNotification = new PlugInNotification
-                    {
-                        TaskId = task.Id,
-                        //NotificationId = notifyRequest.NotificationId, Notification id is the auto-incremented primary key.
-                        NotificationDate = notifyRequest.Schedule.NotifyTime ?? DateTime.Now,
-                        NotificationType = "Reminder",
-                        NotificationTitle = notifyRequest.Title,
-                        NotificationDescription = notifyRequest.Description,
-                        NotificationIsSent = true
-                    };
-                    await notificationRepository.AddOrUpdatePlugInNotificationAsync(newNotification);
-
-                    Debug.WriteLine($"**********PluginNotification Update section End***** " +
-                        $"ID:{newNotification.NotificationId}, " +
-                        $"TaskId: {newNotification.TaskId}, " +
-                        $"DueDate: {newNotification.NotificationDate}, " +
-                        $"Type: {newNotification.NotificationType}," +
-                        $"Title: {newNotification.NotificationTitle}, " +
-                        $"Descr: {newNotification.NotificationDescription}, " +
-                        $"IsSent: {newNotification.NotificationIsSent}");
-
-                    Debug.WriteLine($"Scheduled notification for {task.Title} on {task.DueDate}");
+                    await ScheduleNotification(task, notifyTime);
                 }
                 else if (task.Status == "Completed")
                 {
-                    // Optionally, send completion notification immediately
-                    var notifyRequest = new NotificationRequest
-                    {
-                        NotificationId = task.Id,
-                        Title = $"Task {task.Title} Completed",
-                        Description = $"The task {task.Title} has been marked as completed.",
-                        Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
-                    };
+                    // Completed tasks should Always notify immediately.
+                    // await SendCompletionNotification(task, notifyTime);   
+                    await SendCompletionNotification(task, DateTime.Now.AddSeconds(10));
 
-                    await LocalNotificationCenter.Current.Show(notifyRequest);
-                    Debug.WriteLine($"Sent completion notification for {task.Title}");
-
-                    // Update PluginNotification table
-                    await notificationRepository.AddOrUpdatePlugInNotificationAsync(new PlugInNotification
+                    // Check for reoccurring task and reset status Due Date for notification.
+                    if (task.FrequencyDays > 0)
                     {
-                        TaskId = task.Id,
-                        NotificationId = notifyRequest.NotificationId,
-                        NotificationDate = notifyRequest.Schedule.NotifyTime ?? DateTime.Now,
-                        NotificationType = "Completion",
-                        NotificationTitle = notifyRequest.Title,
-                        NotificationDescription = notifyRequest.Description,
-                        NotificationIsSent = true
-                    });
+                        task.Status = "Scheduled";
+                        if (task.DueDate.HasValue) 
+                        { 
+                            task.DueDate = task.DueDate.Value.AddDays(task.FrequencyDays); 
+                        }
+                        else
+                        { // Handle the case where DueDate is null
+                            task.DueDate = DateTime.Now.AddDays(task.FrequencyDays); 
+                        }
+#if DEBUG  
+                            notifyTime = DateTime.Now.AddSeconds(10);   // for testng purposes, the tester can't wait until DueDate to test the notification, so it is sent in 20 seconds.
+#else
+                            notifyTime = task.DueDate ?? DateTime.Now;  // In non debug mode, DueDate is reset to DueDate + FrequencyDays.
+#endif
+          
+                        await ScheduleNotification(task, notifyTime);
+                        bool goodTaskReset = await repository.UpdateTaskAsync(task);
+                        if (goodTaskReset)
+                        {
+                            DueDateDatePicker.Date = task.DueDate ?? DateTime.Now;
+                            await DisplayAlert("Task Reset Confirm", $"The task, '{task.Title}', has been completed and reset to start on {task.DueDate}.", "OK");
+                            BindingContext = null; BindingContext = task;
+                        }
+                        else
+                        {
+                            await DisplayAlert("Task Reset ERROR", $"The task, {task.Title}, could not be reset.", "OK");
+                        }
+                    }
+
+                    // Update Task status "reset" from 'Completion' to 'Scheduled'.
+                    //goodUpdate = false;
+                    //if (task != null && Task.CompletedTask.Id != 0)   // Not a new or null task
+                    //{
+                    //    // Update existing task
+                    //    goodUpdate = await repository.UpdateTaskAsync(task);
+                    //}
+                    //else
+                    //{
+                    //    // Task is null or Task.Id = 0 means that the task has NEVER been "Scheduled". SHOULD NEVER OCCUR, But just in case...
+                    //    await DisplayAlert("Error", "Task is null or has no ID but is trying to be saved as Completed. Please changed the status to ''Scheduled''.", "OK");
+                    //    return;
+                    //}
+
+                    //if (goodUpdate)
+                    //{
+                    //    await DisplayAlert("Confirm Update #2", "The Task record has been successfully updated.", "OK");
+                    //}
+                    //else
+                    //{
+                    //    await DisplayAlert("Error", "Failed to update the task. Notification not sent.", "OK");
+                    //    return; // Exit if the update fails WITHOUT SENDING NOTIFICATION.
+                    //}
+
+
+
                 }
                 else if (task.Status == "Canceled")
                 {
-                    // Optionally, send cancellation notification immediately
-                    var notifyRequest = new NotificationRequest
-                    {
-                        NotificationId = task.Id,
-                        Title = $"Task {task.Title} Canceled",
-                        Description = $"The task {task.Title} has been canceled.",
-                        Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now }
-                    };
-
-                    await LocalNotificationCenter.Current.Show(notifyRequest);
-                    Debug.WriteLine($"Sent cancellation notification for {task.Title}");
-
-                    // Update PluginNotification table
-                    await notificationRepository.AddOrUpdatePlugInNotificationAsync(new PlugInNotification
-                    {
-                        TaskId = task.Id,
-                        NotificationId = notifyRequest.NotificationId,
-                        NotificationDate = notifyRequest.Schedule.NotifyTime ?? DateTime.Now,
-                        NotificationType = "Canceled",
-                        NotificationTitle = notifyRequest.Title,
-                        NotificationDescription = notifyRequest.Description,
-                        NotificationIsSent = true
-                    });
+                    await SendCancellationNotification(task);
                 }
-            }
+            }           
             else
             {
                 // Display validation errors
@@ -264,8 +250,196 @@ namespace MaintainHome.Views
                 await DisplayAlert("Validation Error", errorMessage, "OK");
             }
         }
-        
+        public void OnDeleteButtonClicked(object sender, EventArgs e)
+        {
+            // Call the async method and handle it properly
+            OnDeleteButtonClickedAsync(sender, e).ConfigureAwait(false);
+        }
+        public async Task OnDeleteButtonClickedAsync(object sender, EventArgs e)
+        {
+            if (_task == null)
+            {
+                return;
+            }
 
+            // Display a confirmation message
+            bool confirmDelete = await DisplayAlert("Confirm Delete", "Are you sure you want to delete this task and all associated data?", "Yes", "No");
+            if (!confirmDelete)
+            {
+                return; // Exit if the user does not confirm the deletion
+            }
+
+            
+            // Delete related data
+            await DeleteRelatedDataAsync(_task.Id);
+
+
+            // Delete Task
+            var repository = new TasksRepository();        // Initialize task repository
+            bool isDeleted = await repository.DeleteTaskAsync(_task.Id);
+
+            if (isDeleted)
+            {
+                // Call SendCancellationNotification method to cancel the notification
+                await SendCancellationNotification(_task);
+
+                await DisplayAlert("Success", "Task successfully deleted.", "OK");
+                await Navigation.PopAsync();
+
+                // delete task notification
+                
+            }
+            else
+            {
+                await DisplayAlert("Error", "Failed to delete the task.", "OK");
+            }
+        }       
+        private async Task DeleteRelatedDataAsync(int taskId)
+        {
+            var partsRepository = new PartInfoRepository();
+            var notificationsRepository = new NotificationRepository();
+            var activitiesRepository = new TaskActivityRepository();
+            var helpsRepository = new TaskHelpRepository();
+            var notesRepository = new TaskNoteRepository();
+            var plugInNotificationRepository = new PlugInNotificationRepository();
+
+            // Delete related parts
+            await partsRepository.DeletePartsByTaskIdAsync(taskId);
+
+            // Delete related notifications
+            await notificationsRepository.DeleteNotificationsByTaskIdAsync(taskId);
+
+            // Delete related activities
+            await activitiesRepository.DeleteActivitiesByTaskIdAsync(taskId);
+
+            // Delete related helps
+            await helpsRepository.DeleteHelpsByTaskIdAsync(taskId);
+
+            // Delete related notes
+            await notesRepository.DeleteNotesByTaskIdAsync(taskId);
+
+            // Delete related PlugInNotification
+            var plugInNotifications = await plugInNotificationRepository.GetPlugInNotificationsByTaskIdAsync(taskId); 
+            foreach (var plugInNotification in plugInNotifications) 
+            { 
+                await plugInNotificationRepository.DeletePlugInNotificationAsync(plugInNotification.NotificationId); 
+            }
+
+
+
+        }
+        private async Task ScheduleNotification(Tasks task, DateTime notifyTime)
+        {
+            Debug.WriteLine($"***Schedule Notification method STARTING********************");
+            Debug.WriteLine($"************* preparing notification data*******************");
+            var notificationRepository = new PlugInNotificationRepository();
+
+            // Schedule new notification based on DueDate
+            var notifyRequest = new NotificationRequest
+            {
+                NotificationId = task.Id,
+                Title = task.Title,
+                Description = $"A task, {task.Title}, is scheduled on {notifyTime}.",
+                Schedule = new NotificationRequestSchedule 
+                { 
+                  NotifyTime = notifyTime,
+                    RepeatType = NotificationRepeat.TimeInterval,
+#if DEBUG
+                    NotifyRepeatInterval = TimeSpan.FromSeconds(10)
+#else
+                    NotifyRepeatInterval = TimeSpan.FromDays(7)
+#endif
+                },
+            };
+            Debug.WriteLine($"************Sending notification to the 3rd party plugin*******************");
+            bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(notifyRequest);
+            Debug.WriteLine($"************(1) Notification 'Show' request sent successfully?: {wasNotifyRequestSuccessful} Due-date: {notifyTime}");
+
+            // Update PluginNotification table
+            var notification = new PlugInNotification
+            {
+                TaskId = task.Id,
+                NotificationId = task.Id,
+                NotificationDate = notifyTime,
+                NotificationType = "DueDate Reminder",
+                NotificationTitle = notifyRequest.Title,
+                NotificationDescription = notifyRequest.Description,
+                NotificationIsSent = true
+            };
+           Debug.WriteLine($"************* Prepared notification record (Notification-id & Notification date): {notification.NotificationId} & {notifyTime}");
+
+            Debug.WriteLine($"***********PluginNotification Update data: " +
+                $"NotificationID:{notification.NotificationId}," +
+                $"TaskId: {notification.TaskId}," +
+                $"DueDate: {notification.NotificationDate}," +
+                $"Type: {notification.NotificationType}," +
+                $"Title: {notification.NotificationTitle}, " +
+                $"Descr: {notification.NotificationDescription}, " +
+                $"IsSent: {notification.NotificationIsSent}");
+
+            await notificationRepository.AddOrUpdatePlugInNotificationAsync(notification);
+            Debug.WriteLine($"***********Uodated Scheduled notification for {task.Title} on {notification.NotificationDate}");
+
+            Debug.WriteLine($"***Schedule Notification Method ENDING********************");
+
+        }
+        private async Task SendCompletionNotification(Tasks task, DateTime notifyTime)
+        {
+            var notificationRepository = new PlugInNotificationRepository();
+
+            // Send completion notification immediately
+            var notifyRequest = new NotificationRequest
+            {
+                NotificationId = task.Id,
+                Title = $"Task {task.Title} Completed",
+                Description = $"The task {task.Title} has been marked as completed.",
+                Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
+            };
+
+            Debug.WriteLine($"Sending ****COMPLETION notification**** for {task.Title}"); 
+            await LocalNotificationCenter.Current.Show(notifyRequest);
+            Debug.WriteLine($"Sent ****COMPLETION notification**** for {task.Title} at {DateTime.Now}");
+
+            // Update PluginNotification table
+            await notificationRepository.AddOrUpdatePlugInNotificationAsync(new PlugInNotification
+            {
+                TaskId = task.Id,
+                NotificationId = notifyRequest.NotificationId,
+                NotificationDate = notifyRequest.Schedule.NotifyTime ?? DateTime.Now,
+                NotificationType = "Completion",
+                NotificationTitle = notifyRequest.Title,
+                NotificationDescription = notifyRequest.Description,
+                NotificationIsSent = true
+            });
+        }
+        private async Task SendCancellationNotification(Tasks task)
+        {
+            var notificationRepository = new PlugInNotificationRepository();
+
+            // Send cancellation notification immediately
+            var notifyRequest = new NotificationRequest
+            {
+                NotificationId = task.Id,
+                Title = $"Task {task.Title} Canceled",
+                Description = $"The task {task.Title} has been canceled.",
+                Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now }
+            };
+
+            await LocalNotificationCenter.Current.Show(notifyRequest);
+            Debug.WriteLine($"Sent cancellation notification for {task.Title}");
+
+            // Update PluginNotification table
+            await notificationRepository.AddOrUpdatePlugInNotificationAsync(new PlugInNotification
+            {
+                TaskId = task.Id,
+                NotificationId = notifyRequest.NotificationId,
+                NotificationDate = notifyRequest.Schedule.NotifyTime ?? DateTime.Now,
+                NotificationType = "Canceled",
+                NotificationTitle = notifyRequest.Title,
+                NotificationDescription = notifyRequest.Description,
+                NotificationIsSent = true
+            });
+        }
         private List<string> ValidateTask(Tasks task)
         {
             var validationResults = new List<string>();
@@ -313,7 +487,6 @@ namespace MaintainHome.Views
 
             return validationResults;
         }
-
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -343,7 +516,6 @@ namespace MaintainHome.Views
                 await DisplayAlert("Error", "An error occurred while loading task activities or notifications.", "OK");
             }
         }
-
         protected override void OnDisappearing()
         {
             base.OnDisappearing();

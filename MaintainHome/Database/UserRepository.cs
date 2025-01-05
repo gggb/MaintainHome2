@@ -1,12 +1,9 @@
 ﻿using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MaintainHome.Models;
 using MaintainHome.Helper;
-
 
 namespace MaintainHome.Database
 {
@@ -16,72 +13,119 @@ namespace MaintainHome.Database
 
         public UserRepository()
         {
-            _database = DatabaseConnection.GetConnectionAsync().Result;
+            try
+            {
+                _database = DatabaseConnection.GetConnectionAsync().Result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database connection: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<bool> AddUserAsync(User user)
         {
-            // Hash the password before storing
-            user.Password = PasswordHelper.HashPassword(user.Password);
+            try
+            {
+                // Hash the password before storing
+                user.Password = PasswordHelper.HashPassword(user.Password);
 
-            // Store the hashed password in SecureStorage
-            await SecureStorage.SetAsync(user.UserName, user.Password);
+                // Store the hashed password in SecureStorage
+                await SecureStorage.SetAsync(user.UserName, user.Password);
 
-            return await _database.InsertAsync(user) > 0;
+                return await _database.InsertAsync(user) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding user: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<User> GetUserAsync(int userId)
         {
-            return await _database.FindAsync<User>(userId);
+            try
+            {
+                return await _database.FindAsync<User>(userId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving user with ID {userId}: {ex.Message}");
+                return null;
+            }
         }
 
-        //================================================
-            public async Task<User> GetUserByUsernameAndPassword(string username, string password)
+        // Get all Users
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            try
+            {
+                // Fetch all Users
+                return await _database.QueryAsync<User>("SELECT * FROM User");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching open users: {ex.Message}");
+                return new List<User>();
+            }
+        }
+
+        public async Task<User> GetUserByUsernameAndPassword(string username, string password)
+        {
+            try
             {
                 // Step 1: Retrieve user from the SQLite database
                 var user = await _database.Table<User>().FirstOrDefaultAsync(u => u.UserName == username);
                 if (user != null)
                 {
-                    //await Application.Current.MainPage.DisplayAlert("User Found", $"User: {user.UserName}", "OK");
-
                     // Step 2: Retrieve hashed password from SecureStorage
                     var storedPasswordHash = await SecureStorage.GetAsync(username);
-                    //await Application.Current.MainPage.DisplayAlert("Retrieved Hashed Password", storedPasswordHash, "OK");
 
                     // Step 3: Verify the entered password with the stored hashed password
                     if (storedPasswordHash != null && PasswordHelper.VerifyPassword(password, storedPasswordHash))
                     {
-                        //await Application.Current.MainPage.DisplayAlert("Verification", "Password verification succeeded.", "OK");
                         return user;
                     }
-                    else
-                    {
-                        //await Application.Current.MainPage.DisplayAlert("Verification", "Password verification failed.", "OK");
-                    }
-                }
-                else
-                {
-                    await Application.Current.MainPage.DisplayAlert("User Not Found", "User not found in the database.", "OK");
                 }
                 return null;
             }
-    //================================================
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving user by username and password: {ex.Message}");
+                return null;
+            }
+        }
 
-
-
-    public async Task<bool> UpdateUserAsync(User user)
+        public async Task<bool> UpdateUserAsync(User user)
         {
-            return await _database.UpdateAsync(user) > 0;
+            try
+            {
+                return await _database.UpdateAsync(user) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating user with ID {user.UserId}: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> DeleteUserAsync(int userId)
         {
-            var user = await _database.FindAsync<User>(userId);
-            if (user != null)
+            try
             {
-                return await _database.DeleteAsync(user) > 0;
+                var user = await _database.FindAsync<User>(userId);
+                if (user != null)
+                {
+                    return await _database.DeleteAsync(user) > 0;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting user with ID {userId}: {ex.Message}");
+                return false;
+            }
         }
     }
 }

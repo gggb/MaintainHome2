@@ -5,10 +5,19 @@
              Padding="10">
 
     <StackLayout Spacing="20" VerticalOptions="Center">
-        <Label Text="Login" FontSize="32" HorizontalOptions="Center" />
+        <Label Text="Login" FontSize="32" HorizontalOptions="Center" TextColor="Black"/>
 
-        <Entry x:Name="UsernameEntry" Placeholder="Username" />
-        <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True" />
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+            <Label Text="Username:" TextColor="Black" VerticalOptions="Center"/>
+            <Entry x:Name="UsernameEntry" Placeholder="Please enter username" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+            <Label Text="Password:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Entry x:Name="PasswordEntry" Placeholder="Please enter password" IsPassword="True" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
+        </StackLayout>
+
+
+
         <Button Text="Login" Clicked="OnLoginButtonClicked" />
 
         <Label x:Name="LoginMessageLabel" Text="" TextColor="Red" HorizontalOptions="Center" />

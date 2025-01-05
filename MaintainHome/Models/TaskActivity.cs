@@ -11,9 +11,7 @@ namespace MaintainHome.Models
     public class TaskActivity : BaseEntity
     {
         private readonly TaskActivityRepository? _taskActivityRepository;
-
         public TaskActivity() { }
-
         public TaskActivity(TaskActivityRepository taskActivityRepository)
         {
             _taskActivityRepository = taskActivityRepository ?? throw new ArgumentNullException(nameof(taskActivityRepository));

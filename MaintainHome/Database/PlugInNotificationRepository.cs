@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+//using CloudKit;
 using MaintainHome.Models;
 using SQLite;
 
@@ -51,42 +52,8 @@ namespace MaintainHome.Database
             }
         }
 
-        // Add or Update PlugInNotification
-        //public async Task AddOrUpdatePlugInNotificationAsync(PlugInNotification notification)
-        //{
-        //    try
-        //    {
-        //        var existingNotification = await _database.Table<PlugInNotification>()
-        //                                                   .Where(n => n.TaskId == notification.TaskId)
-        //                                                   .FirstOrDefaultAsync();
 
-        //        if (existingNotification != null)
-        //        {
-        //            // Update existing notification
-        //            existingNotification.NotificationId = notification.NotificationId;
-        //            existingNotification.TaskId = notification.TaskId;
-        //            existingNotification.NotificationType = notification.NotificationType;
-        //            existingNotification.NotificationDate = notification.NotificationDate;
-        //            existingNotification.NotificationTitle = notification.NotificationTitle;
-        //            existingNotification.NotificationDescription = notification.NotificationDescription;
-        //            existingNotification.NotificationIsSent = notification.NotificationIsSent;
-
-        //            await _database.UpdateAsync(existingNotification);
-        //        }
-        //        else
-        //        {
-        //            // Add new notification
-        //            await _database.InsertAsync(notification);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"Error adding or updating PlugInNotification: {ex.Message}");
-        //    }
-        //}
-
-        // Read (Get) PlugInNotification for a specific TaskId
-
+        
         public async Task AddOrUpdatePlugInNotificationAsync(PlugInNotification notification)
         {
             try
@@ -126,6 +93,7 @@ namespace MaintainHome.Database
             }
         }
 
+        // Read (Get) PlugInNotification for a specific TaskId
         public async Task<PlugInNotification> GetPlugInNotificationByTaskIdAsync(int taskId)
         {
             try
@@ -138,6 +106,23 @@ namespace MaintainHome.Database
                 return null;
             }
         }
+
+        public async Task<List<PlugInNotification>> GetPlugInNotificationsByTaskIdAsync(int taskId) 
+        {
+            try
+            {
+                return await _database.Table<PlugInNotification>()
+                .Where(n => n.TaskId == taskId)
+                .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting PlugInNotifications by TaskId: {ex.Message}");
+                return null;
+            }
+        }
+
+
 
         // Read (Get) all PlugInNotifications for a specific TaskId
         public async Task<List<PlugInNotification>> GetAllPlugInNotificationsByTaskIdAsync(int taskId)

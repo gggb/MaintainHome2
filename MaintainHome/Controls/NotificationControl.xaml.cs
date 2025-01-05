@@ -234,6 +234,12 @@ namespace MaintainHome.Controls
         {
             try
             {
+                if (SelectedItem == null)
+                {
+                    await DisplayAlert("Delete Error", "There is no notification data to Delete", "OK");
+                    return;
+                }
+
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
@@ -246,11 +252,15 @@ namespace MaintainHome.Controls
 
                 if (SelectedItem != null)
                 {
+                    // Delete Notification record
                     var repository = new NotificationRepository();
                     await repository.DeleteNotificationAsync(SelectedItem.NotificationId);
                     await parentPage.DisplayAlert("Confirm Update", "The Notification record has been deleted.", "OK");
 
-                    ItemsSource.Remove(SelectedItem); SelectedItem = null;
+                    // Remove the selected item and clear the selection
+                    ItemsSource.Remove(SelectedItem); 
+                    SelectedItem = null;
+
                     // Refresh the entire notification list
                     await LoadData(TaskId);
                 }

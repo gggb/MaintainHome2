@@ -81,13 +81,8 @@ namespace MaintainHome.Database
             var notificationRepository = new PlugInNotificationRepository();
             var dummyCheck = await notificationRepository.GetPlugInNotificationByTaskIdAsync(-1);   // Perform a dummy read
             Debug.WriteLine($"Warm-up check result: {dummyCheck}");
-        }
-        
-            
-            
-            
-            
-            private static async Task EvaluateLoadedTaskForNotifications()
+        }            
+        private static async Task EvaluateLoadedTaskForNotifications()
         {
             // Set NotifyTime to 36 months from now
             DateTime notifyTime = DateTime.Now.AddSeconds(15);
@@ -128,260 +123,18 @@ namespace MaintainHome.Database
                 Debug.WriteLine($"***Error sending notification: {ex.Message}");
             }
         }
-
-
-
-
-
-        //_tasksRepository = new TasksRepository();
-        //var tasks = await _tasksRepository.GetTasksAsync(); // Fetch tasks from the repository
-
-        //foreach (var task in tasks)
-        //{
-        //    if (task.Status == "Scheduled")
-        //    {
-        //        // Schedule upcoming task reminder alert when pending task is within 3 days of scheduled due date.
-        //        DateTime now = DateTime.UtcNow;
-        //        if (task.DueDate.HasValue && task.DueDate.Value > DateTime.Now && !task.ReminderSent && task.DueDate.Value <= DateTime.Now.AddDays(3))
-        //        {
-        //            // Prepare Notification
-        //            var startNotifyRequest = new NotificationRequest
-        //            {
-        //                NotificationId = task.Id,
-        //                Title = "Upcoming Task Reminder",
-        //                Description = $"Your task '{task.Title}' is due soon.",
-        //                Schedule = new NotificationRequestSchedule { NotifyTime = task.DueDate.Value.AddDays(-3) }
-        //            };
-
-        //            // Ensure notification permissions are granted (it was requested during application startup, in App.xaml.cs).
-        //            // If permissions are not granted, make another request.   
-        //            Debug.WriteLine($"**************Asking for notification permissions:  {startNotifyRequest.Schedule}");
-        //            bool isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
-        //            if (!isNotifyPermissionsGranted)
-        //            {
-        //                await LocalNotificationCenter.Current.RequestNotificationPermission();
-        //            }
-
-        //            //Send the request 
-        //            Debug.WriteLine($"**************Sent notification request*************");
-        //            bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
-        //            Debug.WriteLine($"***did request execute successfully: {wasNotifyRequestSuccessful}");
-
-        //            // update the Tasks table (ReminderSent) to prevent additional notifictions
-        //            if (wasNotifyRequestSuccessful)
-        //            {
-        //                task.ReminderSent = true;
-        //                await _tasksRepository.UpdateTaskAsync(task);
-
-        //                // update the PluginNotification table with the sendout details (in order to delelte it later if necessary)
-        //                var plugInNotification = new PlugInNotification
-        //                {
-        //                    NotificationId = task.Id,
-        //                    NotificationType = "Pre-Notice",
-        //                    NotificationDate = task.DueDate.Value.AddDays(-3).ToUniversalTime(),
-        //                    NotificationTitle = startNotifyRequest.Title,
-        //                    NotificationDescription = startNotifyRequest.Description
-        //                };
-
-        //                //_tasksRepository = new TasksRepository();
-        //                _plugInNotificationRepository = new PlugInNotificationRepository();
-        //                await _plugInNotificationRepository.AddPlugInNotificationAsync(plugInNotification);
-        //            }
-
-        //            // Schedule overdue task alert
-        //            if (task.DueDate.HasValue && task.DueDate.Value < DateTime.Now && !task.OverdueAlertSent)
-        //            {
-        //                int overdueDays = (DateTime.Now - task.DueDate.Value).Days;
-        //                string day;
-        //                if (overdueDays > 1)
-        //                {
-        //                    day = "days";
-        //                }
-        //                else
-        //                {
-        //                    day = "day";
-        //                }
-
-        //                try
-        //                { 
-        //                    // Prepare Notification
-        //                    startNotifyRequest.NotificationId = task.Id;
-        //                    startNotifyRequest.Title = "Overdue Task Alert";
-        //                    startNotifyRequest.Description = $"Your task '{task.Title}', scheduled for {task.DueDate.Value.ToShortDateString()}, is {overdueDays} {day} overdue.";
-        //                    startNotifyRequest.Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now };
-
-        //                    //// Ensure notification permissions were granted (it was requested during application startup, in App.xaml.cs).
-        //                    //// If permissions are not granted, make another request.   
-        //                    //Debug.WriteLine($"**************Asking for notification permissions:  {startNotifyRequest.Schedule}");
-        //                    //isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
-        //                    //if (!isNotifyPermissionsGranted)
-        //                    //{
-        //                    //    await LocalNotificationCenter.Current.RequestNotificationPermission();
-        //                    //}
-
-        //                    ////Send the request 
-        //                    //Debug.WriteLine($"**************Sent notification request*************");
-        //                    //wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
-        //                    //Debug.WriteLine($"***did request execute successfully: {wasNotifyRequestSuccessful}");
-
-
-        //                    // Log notification request details
-        //                    Debug.WriteLine($"***Notification Request Details***");
-        //                    Debug.WriteLine($"ID: {startNotifyRequest.NotificationId}");
-        //                    Debug.WriteLine($"Title: {startNotifyRequest.Title}");
-        //                    Debug.WriteLine($"Description: {startNotifyRequest.Description}");
-        //                    Debug.WriteLine($"NotifyTime: {startNotifyRequest.Schedule.NotifyTime}");
-        //                    Debug.WriteLine($"Schedule: {startNotifyRequest.Schedule}");
-
-        //                    // Ensure notification permissions are granted
-        //                    Debug.WriteLine($"**************Asking for notification permissions: {startNotifyRequest.Schedule}");
-        //                    isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
-        //                    if (!isNotifyPermissionsGranted)
-        //                    {
-        //                        await LocalNotificationCenter.Current.RequestNotificationPermission();
-        //                    }
-
-        //                    // Send the notification request
-        //                    Debug.WriteLine($"**************Sent notification request*************");
-        //                    wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(startNotifyRequest);
-        //                    Debug.WriteLine($"***Did request execute successfully: {wasNotifyRequestSuccessful}");
-
-        //                    //return wasNotifyRequestSuccessful;
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    // Log any exceptions that occur
-        //                    Debug.WriteLine($"***Error sending notification: {ex.Message}");
-        //                    //return false;
-        //                }
-        //            }         
-        //            // If notification send was successful, update the Tasks table (ReminderSent) to prevent additional notifictions
-        //            if (wasNotifyRequestSuccessful)
-        //            {
-        //                // Update boolean OverdueAlertSent to true, in the Tasks class.
-        //                task.OverdueAlertSent = true;
-        //                await _tasksRepository.UpdateTaskAsync(task);
-
-        //                // update the PluginNotification table with the sendout details (in order to delelte it later if necessary)
-        //                var plugInNotification = new PlugInNotification
-        //                {
-        //                    NotificationId = task.Id,
-        //                    NotificationType = "Pre-Notice",
-        //                    NotificationDate = task.DueDate.Value.AddDays(-3).ToUniversalTime(),
-        //                    NotificationTitle = startNotifyRequest.Title,
-        //                    NotificationDescription = startNotifyRequest.Description
-        //                };
-
-        //                //_tasksRepository = new TasksRepository();
-        //                _plugInNotificationRepository = new PlugInNotificationRepository();
-        //                await _plugInNotificationRepository.AddPlugInNotificationAsync(plugInNotification);
-        //            }
-        //        }
-        //    }
-        //}
-
-
-
         private static async Task LoadInitialTasks(SQLiteAsyncConnection database)
         {
             var tasks = new List<Tasks>
             {
-                new Tasks
-                {
-                    Title = "Change A/C filter",
-                    Description = "Change the air conditioner filter",
-                    Status = "Scheduled",
-                    FrequencyDays = 30,
-                    DueDate = DateTime.Today.AddDays(10),
-                    Priority = "Medium",
-                    UserId = 1,
-                    CategoryId = 1,
-                    //TaskHelpsId = 1
-                },
-                new Tasks
-                {
-                    Title = "Drain hot-water heater sediment",
-                    Description = "Drain the sediment from the hot-water heater",
-                    Status = "Scheduled",
-                    FrequencyDays = 180,
-                    DueDate = DateTime.Today.AddDays(15),
-                    Priority = "Low",
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 2
-                },
-                new Tasks
-                {
-                    Title = "Backwash pool filter",
-                    Description = "Backwash the pool filter if the PSI is over 20",
-                    Status = "Scheduled",
-                    FrequencyDays = 60,
-                    DueDate = DateTime.Today.AddDays(20),
-                    Priority = "Med",
-                    UserId = 1,
-                    CategoryId = 3,
-                    //TaskHelpsId = 3
-                },
-                new Tasks
-                {
-                    Title = "Replace washing machine hoses",
-                    Description = "",
-                    Status = "Scheduled",
-                    FrequencyDays = 365,
-                    DueDate = DateTime.Today.AddDays(25),
-                    Priority = "Medium",
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 4
-                },
-                new Tasks
-                {
-                    Title = "Oil/inspect garage door",
-                    Description = "Oil the wheels of the garage door side reel",
-                    Status = "Scheduled",
-                    FrequencyDays = 90,
-                    DueDate = DateTime.Today.AddDays(30),
-                    Priority = "Low",
-                    UserId = 1,
-                    CategoryId = 4,
-                    //TaskHelpsId = 5
-                },
-                new Tasks
-                {
-                    Title = "Check bathroom faucets for leaks",
-                    Description = "Replace the seal of the bathroom faucet",
-                    Status = "Scheduled",
-                    FrequencyDays = 180,
-                    DueDate = DateTime.Today.AddDays(35),
-                    Priority = "Low",
-                    UserId = 1,
-                    CategoryId = 2,
-                    //TaskHelpsId = 6
-                },
-                new Tasks
-                {
-                    Title = "Check Gutters and ensure downspouts aren't blocked",
-                    Description = "Inspect the gutters and ensure the downspouts are not blocked",
-                    Status = "Scheduled",
-                    FrequencyDays = 30,
-                    DueDate = DateTime.Today.AddDays(45),
-                    Priority = "Low",
-                    UserId = 1,
-                    CategoryId = 5,
-                    //TaskHelpsId = 7
-                },
-                new Tasks
-                {
-                    Title = "Check sprinkler system for broken heads or stuck valves",
-                    Description = "Inspect the sprinkler system for any broken heads or stuck valves",
-                    Status = "Scheduled",
-                    FrequencyDays = 90,
-                    DueDate = DateTime.Today.AddDays(60),
-                    Priority = "Urgent",
-                    UserId = 1,
-                    CategoryId = 6,
-                    //TaskHelpsId = 8
-                }
+                new Tasks { Title = "Change A/C filter", Description = "Change the air conditioner filter", Status = "Unscheduled", FrequencyDays = 30, DueDate = DateTime.Today.AddDays(10), Priority = "Medium", UserId = 1, CategoryId = 2},
+                new Tasks { Title = "Drain hot-water heater sediment", Description = "Drain the sediment from the hot-water heater", Status = "Unscheduled", FrequencyDays = 180, DueDate = DateTime.Today.AddDays(15), Priority = "Low", UserId = 1, CategoryId = 3},
+                new Tasks { Title = "Backwash pool filter", Description = "Backwash the pool filter if the PSI is over 20", Status = "Unscheduled", FrequencyDays = 60, DueDate = DateTime.Today.AddDays(20), Priority = "Med", UserId = 1, CategoryId = 4},
+                new Tasks { Title = "Replace washing machine hoses", Description = "", Status = "Unscheduled", FrequencyDays = 365, DueDate = DateTime.Today.AddDays(25), Priority = "Medium", UserId = 1, CategoryId = 3},
+                new Tasks { Title = "Oil/inspect garage door", Description = "Oil the wheels of the garage door side reel", Status = "Unscheduled", FrequencyDays = 90, DueDate = DateTime.Today.AddDays(30), Priority = "Low", UserId = 1, CategoryId = 5},
+                new Tasks { Title = "Check bathroom faucets for leaks", Description = "Replace the seal of the bathroom faucet", Status = "Unscheduled", FrequencyDays = 180, DueDate = DateTime.Today.AddDays(35), Priority = "Low", UserId = 1, CategoryId = 3},
+                new Tasks { Title = "Check Gutters and ensure downspouts aren't blocked", Description = "Inspect the gutters and ensure the downspouts are not blocked", Status = "Unscheduled", FrequencyDays = 30, DueDate = DateTime.Today.AddDays(45), Priority = "Low", UserId = 1, CategoryId = 6},
+                new Tasks { Title = "Check sprinkler system for broken heads or stuck valves", Description = "Inspect the sprinkler system for any broken heads or stuck valves", Status = "Unscheduled", FrequencyDays = 90, DueDate = DateTime.Today.AddDays(60), Priority = "Urgent", UserId = 1, CategoryId = 7 },
             };
 
             var tasksRepository = new TasksRepository();
@@ -402,14 +155,13 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Id: {tsk.Id}, Title: {tsk.Title}, Descr: {tsk.Description}, Status: {tsk.Status}, Freq: {tsk.FrequencyDays}, DueDate: {tsk.DueDate}, Pri: {tsk.Priority}, User: {tsk.UserId}, Category: {tsk.CategoryId},");
             }
         }
-
         private static async Task LoadInitialTaskActivity(SQLiteAsyncConnection database)
         {
             var taskActivities = new List<TaskActivity>
             {
                 new TaskActivity {TaskId = 1, Status = "Pending", Condition = "Fair", Action = "Filter replacement failed!", TimeSpent = .5m, Notes = "Filter was the wrong size, 20 x 20 x 4. Should have been 20 x 25 x 4."},
                 new TaskActivity {TaskId = 1, Status = "On-Hold", Condition = "Fair", Action = "Replaced Filter", TimeSpent = .5m, Notes = "Not too dirty but needed changing. Everything is in order."},
-                new TaskActivity {TaskId = 1, Status = "Canceled", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
+                new TaskActivity {TaskId = 2, Status = "Canceled", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Lots of sediment. May want to peform check sooner."},
                 new TaskActivity {TaskId = 3, Status = "Completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "PSI was under 20. No back-wash performed"},
                 new TaskActivity {TaskId = 4, Status = "Completed", Condition = "Poor", Action = "Inspection", TimeSpent = 2, Notes = "Hose was bulging, days from breaking!!"},
                 new TaskActivity {TaskId = 5, Status = "Completed", Condition = "Good", Action = "Inspection", TimeSpent = 2, Notes = "Rollers were in perfect shape."},
@@ -431,7 +183,6 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Id: {ta.Id}, TaskId: {ta.TaskId}, Status: {ta.Status}, Condition: {ta.Condition}, Action: {ta.Action}, Duration: {ta.TimeSpent}, Notes: {ta.Notes}");
             }
         }
-
         private static async Task LoadInitialPartBuy(SQLiteAsyncConnection database)
         {
             var partBuys = new List<PartBuy>
@@ -462,7 +213,6 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Help Id: {part.PartBuyId}, PartInfo Id: {part.PartInfoId}, Source name: {part.SourceName}, URL: {part.SourceURL}, Price: {part.Price}, Availability: {part.Availability}");
             }
         }
-
         private static async Task LoadInitialPartInfo(SQLiteAsyncConnection database)
         {
             var partinfos = new List<PartInfo>
@@ -492,15 +242,16 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Part Id: {part.PartInfoId}, Part Id: {part.TaskId}, Part name: {part.Name}, Descr: {part.Description}, Price: {part.Price}, Source: {part.Source}");
             }
         }
-
         private static async Task LoadInitialTaskHelp(SQLiteAsyncConnection database)
         {
             var taskHelps = new List<TaskHelp>
             {
                 new TaskHelp {TaskId = 1, Description = "How to change an A/C filter.",            Type = "Video",     URL = "https://www.youtube.com/watch?v=sOcfx5o9-B4" },
-                new TaskHelp {TaskId = 1, Description = "The best type of washing machine hoses.", Type = "Pictorial", URL = "https://www.youtube.com/watch?v=cLvZIGCv36Q"},
-                new TaskHelp {TaskId = 1, Description = "Garage door Maintainance tips.",          Type = "Textual",   URL = "https://www.huxleyandco.co.uk/common-problems-with-electric-roller-garage-doors-and-how-to-fix-them/"},
-                new TaskHelp {TaskId = 7, Description = "Best and Worst Gutter Guards.",           Type = "Other",     URL = "https://www.youtube.com/watch?v=Yc79p-kfTvo"},
+                new TaskHelp {TaskId = 1, Description = "Changing A/C Filters.",                   Type = "Pictorial", URL = "https://www.hometips.com/repair-fix/heat-pump-maintenance.html"},
+                new TaskHelp {TaskId = 1, Description = "A/C Filter Changing Discussion.",          Type = "Textual",   URL = "https://hvac-talk.com/vbb/threads/2278461-Teach-me-about-AC-filters-please"},
+                new TaskHelp {TaskId = 4, Description = "The best type of washing machine hoses.", Type = "Pictorial", URL = "https://www.youtube.com/watch?v=cLvZIGCv36Q"},
+                new TaskHelp {TaskId = 5, Description = "Garage door Maintainance tips.",          Type = "Textual",   URL = "https://www.huxleyandco.co.uk/common-problems-with-electric-roller-garage-doors-and-how-to-fix-them/"},
+                new TaskHelp {TaskId = 7, Description = "Best and Worst Gutter Guards.",           Type = "Video",     URL = "https://www.youtube.com/watch?v=Yc79p-kfTvo"},
                 new TaskHelp {TaskId = 8, Description = "Common Sprinkler problems.",              Type = "Video",     URL = "https://www.youtube.com/watch?v=m6t35voD7v0" },                                                                               // Type 1 = video, 2 = written instructions. 3 = pictoral instructions
             };
 
@@ -523,7 +274,6 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********Help Id: {help.TaskHelpsId}, Task Id: {help.TaskId}, Descr: {help.Description}, Type: {help.Type}, Link: {help.URL}");
             }
         }
-
         private static async Task LoadInitialTaskNote(SQLiteAsyncConnection database)
         {
             var taskNotes = new List<TaskNote>
@@ -554,9 +304,39 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********NoteId: {note.NoteId}, Type: {note.Type}, Content: {note.NoteContent}, TimeStamp: {note.TimeStamp}");
             }
         }
-
         private static async Task LoadInitialUser(SQLiteAsyncConnection database)
-        {
+        {    
+            var initialUser2 = new User
+            {
+                UserName = "None",
+                Password = "gggb0211",
+                Email = "wm-byrd@swbell.net",
+                Phone = "2149955647",
+            };
+            //await Application.Current.MainPage.DisplayAlert("Starting LoadInitialUser method", " ", "OK");
+            var existingUser2 = await database.Table<User>().FirstOrDefaultAsync(u => u.UserName == initialUser2.UserName);
+            if (existingUser2 == null)
+            {
+                // If the user does not exist, hash the password
+                var hashedPassword = PasswordHelper.HashPassword("gggb0211");
+                //await Application.Current.MainPage.DisplayAlert("Hashed Password", hashedPassword, "OK");
+
+                // Store the hashed password in SecureStorage
+                await SecureStorage.SetAsync(initialUser2.UserName, hashedPassword);
+
+
+                // Store hashed password in the database for debugging. Insert user into the database
+                initialUser2.Password = hashedPassword;
+                await database.InsertAsync(initialUser2);
+
+                //Display an alert confirming the insertion
+                //await Application.Current.MainPage.DisplayAlert("User Insertion", "Initial user inserted.", "OK");
+            }
+            else
+            {
+                // Display an alert if the user already exists
+                await Application.Current.MainPage.DisplayAlert("Initialization", "User already exists in the database.", "OK");
+            }
 
             var initialUser = new User
             {
@@ -587,12 +367,9 @@ namespace MaintainHome.Database
             else
             {
                 // Display an alert if the user already exists
-                //await Application.Current.MainPage.DisplayAlert("Initialization", "User already exists in the database.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Initialization", "User already exists in the database.", "OK");
             }
-
         }
-
-
         private static async Task LoadInitialNotification(SQLiteAsyncConnection database)
         {
             var notifications = new List<MaintainHome.Models.Notification>
@@ -625,15 +402,15 @@ namespace MaintainHome.Database
             }
 
         }
-
         private static async Task LoadInitialCategories(SQLiteAsyncConnection database)
         {
             var categories = new List<Category>
             {
+                new Category {Title = "None", Priority = 2},
                 new Category {Title = "HVAC", Priority = 2},
                 new Category {Title = "Plumbing", Priority = 2},
                 new Category {Title = "Pool", Priority = 2},
-                new Category {Title = "Garrage", Priority = 2},
+                new Category {Title = "Garage", Priority = 2},
                 new Category {Title = "Gutters", Priority = 2},
                 new Category {Title = "Sprinklers", Priority = 1}
             };
@@ -653,13 +430,5 @@ namespace MaintainHome.Database
                 Console.WriteLine($"***********CategoryId: {cat.CategoryId}, Title: {cat.Title}, Priority: {cat.Priority}");
             }
         }
-
-
-
-
-
-
-
-
     }
 }

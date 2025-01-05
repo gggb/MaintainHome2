@@ -9,11 +9,6 @@ namespace MaintainHome.Controls
         bool IsCancelVisible { get; set; }
         bool IsDeleteVisible { get; set; }
 
-        // ======================================================
-        // Likely should be removed-- not common to all 5 controls.
-        //ObservableCollection<TaskNote> ItemsSource { get; set; }
-        // =======================================================
-
 
         Page GetParentPage();
         SelectionMode CollectionSelectionMode { get; set; }
@@ -29,17 +24,7 @@ namespace MaintainHome.Controls
         void OnCancelButtonClicked(object sender, EventArgs e);
         void OnDeleteButtonClicked(object sender, EventArgs e);
         void OnSaveButtonClicked(object sender, EventArgs e);
-
-
-
         Task<bool> ValidateForm();
-
-        // ======================================================
-        // Likely should be removed-- not common to all 5 controls.
-        //TaskNote SelectedItem { get; set; }
-        //TaskNote SelectedItem { get; set; }
-        // =======================================================
-
         void OnNewButtonClicked(object sender, EventArgs e);
         void OnSelectionChanged(object sender, SelectionChangedEventArgs e);
         int TaskId { get; set; }

@@ -1,3 +1,5 @@
+//using Android.Views;
+//using Android.Widget;
 using MaintainHome.Database;
 using MaintainHome.Models;
 using Microsoft.Maui.Controls;
@@ -144,7 +146,7 @@ namespace MaintainHome.Controls
         {
             try
             {
-                SelectedItem = new PartInfo();
+                SelectedItem = new PartInfo{TaskId = TaskId};
                 SectionTitle = "Add a New Task Part";
                 IsAddVisible = false; IsDeleteVisible = false;
                 IsCancelVisible = true;
@@ -224,6 +226,12 @@ namespace MaintainHome.Controls
         {
             try
             {
+                if (SelectedItem == null)
+                {
+                    await DisplayAlert("Delete Error", "There is no part to Delete", "OK");
+                    return;
+                }
+
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
@@ -243,6 +251,15 @@ namespace MaintainHome.Controls
                     ItemsSource.Remove(SelectedItem);
                     await parentPage.DisplayAlert("Confirm Update", "The Task note record has been deleted.", "OK");
 
+                    // Clear the binding context or set it to a new part
+                    NameEntry.Text = string.Empty; 
+                    PriceEntry.Text = string.Empty; 
+                    SourceEntry.Text = string.Empty; 
+                    DescriptionEditor.Text = string.Empty;
+
+                    SelectedItem = null;
+                    BindingContext = new PartInfo();
+
                     // Refresh the entire task note list
                     await LoadData(TaskId);
                 }
@@ -253,6 +270,8 @@ namespace MaintainHome.Controls
                 await DisplayAlert("Error", "An error occurred while deleting the task note.", "OK");
             }
         }
+
+
 
         public void OnCancelButtonClicked(object sender, EventArgs e)
         {

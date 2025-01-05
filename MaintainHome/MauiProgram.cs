@@ -13,12 +13,14 @@ namespace MaintainHome
                 .UseMauiCommunityToolkit() // Ensure this line is added
                 .ConfigureFonts(fonts =>
                 {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("Roboto-Regular.ttf", "RobotoRegular");
+                    fonts.AddFont("Roboto-Bold.ttf", "RobotoBold");
+                    fonts.AddFont("Roboto-BoldItalic.ttf", "RobotoBoldItalic");
                 });
 
 #if DEBUG
     		builder.Logging.AddDebug();
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #endif
 
             return builder.Build();

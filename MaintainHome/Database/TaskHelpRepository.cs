@@ -1,11 +1,8 @@
 ﻿using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MaintainHome.Models;
-//using Android.Gms.Tasks;
 
 namespace MaintainHome.Database
 {
@@ -15,42 +12,107 @@ namespace MaintainHome.Database
 
         public TaskHelpRepository()
         {
-            _database = DatabaseConnection.GetConnectionAsync().Result;
+            try
+            {
+                _database = DatabaseConnection.GetConnectionAsync().Result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database connection: {ex.Message}");
+                throw;
+            }
         }
 
         // Create (Add) TaskHelp
         public async Task<bool> AddTaskHelpAsync(TaskHelp taskHelp)
         {
-            return await _database.InsertAsync(taskHelp) > 0;
+            try
+            {
+                return await _database.InsertAsync(taskHelp) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding TaskHelp: {ex.Message}");
+                return false;
+            }
         }
 
         // Read (Get) all TaskHelp records that match the TaskId
         public async Task<List<TaskHelp>> GetAllTaskHelpsAsyncByTaskId(int taskId)
         {
-            return await _database.Table<TaskHelp>().Where(t => t.TaskId == taskId).ToListAsync();
+            try
+            {
+                return await _database.Table<TaskHelp>().Where(t => t.TaskId == taskId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving TaskHelps for TaskID {taskId}: {ex.Message}");
+                return new List<TaskHelp>();
+            }
         }
 
         // Read (Get) TaskHelp by ID
         public async Task<TaskHelp> GetTaskHelpAsync(int taskHelpId)
         {
-            return await _database.FindAsync<TaskHelp>(taskHelpId);
+            try
+            {
+                return await _database.FindAsync<TaskHelp>(taskHelpId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving TaskHelp with ID {taskHelpId}: {ex.Message}");
+                return null;
+            }
         }
 
         // Update TaskHelp
         public async Task<bool> UpdateTaskHelpAsync(TaskHelp taskHelp)
         {
-            return await _database.UpdateAsync(taskHelp) > 0;
+            try
+            {
+                return await _database.UpdateAsync(taskHelp) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating TaskHelp with ID {taskHelp.TaskHelpsId}: {ex.Message}");
+                return false;
+            }
         }
 
         // Delete TaskHelp
         public async Task<bool> DeleteTaskHelpAsync(int taskHelpId)
         {
-            var taskHelp = await _database.FindAsync<TaskHelp>(taskHelpId);
-            if (taskHelp != null)
+            try
             {
-                return await _database.DeleteAsync(taskHelp) > 0;
+                var taskHelp = await _database.FindAsync<TaskHelp>(taskHelpId);
+                if (taskHelp != null)
+                {
+                    return await _database.DeleteAsync(taskHelp) > 0;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting TaskHelp with ID {taskHelpId}: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Delete all help (tips) associated with a deleted task (to avoid orphaned data)
+        public async Task DeleteHelpsByTaskIdAsync(int taskId)
+        {
+            try
+            {
+                var helps = await _database.Table<TaskHelp>().Where(h => h.TaskId == taskId).ToListAsync();
+                foreach (var help in helps)
+                {
+                    await _database.DeleteAsync(help);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting TaskHelps for TaskID {taskId}: {ex.Message}");
+            }
         }
     }
 }

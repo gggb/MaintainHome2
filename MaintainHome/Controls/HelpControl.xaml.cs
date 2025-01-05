@@ -1,3 +1,4 @@
+//using Java.Nio.FileNio.Attributes;
 using MaintainHome.Database;
 using MaintainHome.Models;
 using Microsoft.Maui.Controls;
@@ -195,7 +196,7 @@ namespace MaintainHome.Controls
         {
             try
             {
-                SelectedItem = new TaskHelp();
+                SelectedItem = new TaskHelp { TaskId = TaskId }; 
                 SectionTitle = "Add a New Task Help";
                 IsAddVisible = false; IsDeleteVisible = false;
                 IsCancelVisible = true;
@@ -222,6 +223,12 @@ namespace MaintainHome.Controls
         {
             try
             {
+                if (SelectedItem == null)
+                {
+                    await DisplayAlert("Delete Error", "There is no help record to Delete", "OK");
+                    return;
+                }
+
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
@@ -238,6 +245,15 @@ namespace MaintainHome.Controls
                     await repository.DeleteTaskHelpAsync(SelectedItem.TaskHelpsId);
                     ItemsSource.Remove(SelectedItem);
                     await parentPage.DisplayAlert("Confirm Update", "The Task Help record has been deleted.", "OK");
+
+                    // Clear the binding context or set it to a new Help when the last help tip is deleted.
+                    TypePicker.SelectedItem = null;
+                    URLEntry.Text = string.Empty;
+                    DescrEdit.Text = string.Empty; 
+
+                    SelectedItem = null;
+                    BindingContext = new TaskHelp();
+
 
                     // Refresh the entire task Help list
                     await LoadData(TaskId);

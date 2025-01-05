@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MaintainHome.Models;
 using SQLite;
@@ -17,36 +18,77 @@ namespace MaintainHome.Database
         // Create (Add) Category
         public async Task<bool> AddCategoryAsync(Category category)
         {
-            return await _database.InsertAsync(category) > 0;
+            try
+            {
+                return await _database.InsertAsync(category) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding category: {ex.Message}");
+                return false;
+            }
         }
 
         // Read (Get) Category by ID
         public async Task<Category> GetCategoryAsync(int categoryId)
         {
-            return await _database.FindAsync<Category>(categoryId);
+            try
+            {
+                return await _database.FindAsync<Category>(categoryId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving category with ID {categoryId}: {ex.Message}");
+                return null;
+            }
         }
 
         // Update Category
         public async Task<bool> UpdateCategoryAsync(Category category)
         {
-            return await _database.UpdateAsync(category) > 0;
+            try
+            {
+                return await _database.UpdateAsync(category) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating category with ID {category.CategoryId}: {ex.Message}");
+                return false;
+            }
         }
 
         // Delete Category
         public async Task<bool> DeleteCategoryAsync(int categoryId)
         {
-            var category = await _database.FindAsync<Category>(categoryId);
-            if (category != null)
+            try
             {
-                return await _database.DeleteAsync(category) > 0;
+                var category = await _database.FindAsync<Category>(categoryId);
+                if (category != null)
+                {
+                    return await _database.DeleteAsync(category) > 0;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting category with ID {categoryId}: {ex.Message}");
+                return false;
+            }
         }
 
-        // New method to get all categories
+        // Get all categories
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
-            return await _database.Table<Category>().ToListAsync();
+            try
+            {
+                return await _database.Table<Category>().ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving all categories: {ex.Message}");
+                return new List<Category>();
+            }
         }
     }
 }
+

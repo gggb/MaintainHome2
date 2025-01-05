@@ -13,12 +13,11 @@ namespace MaintainHome.Views
         {
             InitializeComponent();
             _userRepository = new UserRepository();
+            UsernameEntry.Text = "billbyrd";
+            PasswordEntry.Text = "gggb0211";            
         }
-
         private async void OnLoginButtonClicked(object sender, EventArgs e)
         {
-            UsernameEntry.Text = "billbyrd";
-            PasswordEntry.Text = "gggb0211";
             var username = UsernameEntry.Text;
             var password = PasswordEntry.Text;
 
@@ -31,13 +30,19 @@ namespace MaintainHome.Views
             var user = await _userRepository.GetUserByUsernameAndPassword(username, password);
             if (user != null)
             {
+                // Set the current user in the App
+                App.CurrentUser = user;
+
                 //await Application.Current.MainPage.DisplayAlert("Success", "Login successful.", "OK");
-                await Navigation.PushAsync(new Dashboard());
-                // Navigate to the next page or perform any other action
+                //await Navigation.PushAsync(new Dashboard());
+                //await Navigation.PushAsync(new MainMenuPage());
+                Application.Current.MainPage = new MainMenuPage();
+
+
             }
             else
             {
-                //LoginMessageLabel.Text = "Invalid username or password.";
+                LoginMessageLabel.Text = "Invalid username or password.";
             }
         }
 

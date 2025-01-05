@@ -6,25 +6,40 @@
              Padding="10">
 
     <StackLayout Spacing="20" VerticalOptions="Center">
-        <Label Text="Create Account" FontSize="32" HorizontalOptions="Center" />
+    <Label Text="Create Account" FontSize="32" HorizontalOptions="Center" TextColor="Black"/>
 
-        <Entry x:Name="UsernameEntry" Placeholder="Username" TextColor="Black" BackgroundColor="White" />
-        <Entry x:Name="EmailEntry" Placeholder="Email" TextColor="Black" BackgroundColor="White"/>
-        <!--<Entry.Behaviors>
-                <behaviors:EmailValidationBehavior />
-            </Entry.Behaviors>
-        </Entry>-->
-        <Entry x:Name="PhoneEntry" Placeholder="Phone" TextColor="Black" BackgroundColor="White">
+    <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+        <Label Text="Username:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
+        <Entry x:Name="UsernameEntry" Placeholder="Please enter username" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+    </StackLayout>
+
+    <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+        <Label Text="Password:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Entry x:Name="PasswordEntry" Placeholder="Please enter password" IsPassword="True" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+    </StackLayout>
+
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+        <Label Text="Email:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Entry x:Name="EmailEntry" Placeholder="Please enter email" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+    </StackLayout>
+    
+    <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+        <Label Text="Phone:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Entry x:Name="PhoneEntry" Placeholder="Please enter phone number" TextColor="Black" BackgroundColor="White" WidthRequest="200">
             <Entry.Behaviors>
                 <behaviors:PhoneNumberBehavior />
             </Entry.Behaviors>
         </Entry>
-        <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True" TextColor="Black" BackgroundColor="White" />
-        <Button Text="Register" Clicked="OnRegisterButtonClicked" />
-
-        <Label x:Name="RegisterMessageLabel" Text="" TextColor="Red" HorizontalOptions="Center" />
-
-        <Button Text="Back to Login" Clicked="OnBackToLoginButtonClicked" />
     </StackLayout>
+    
+   
+    
+    <Button Text="Register" Clicked="OnRegisterButtonClicked"/>
+    
+    <Label x:Name="RegisterMessageLabel" Text="" TextColor="Red" HorizontalOptions="Center"/>
+    
+    <Button Text="Back to Login" Clicked="OnBackToLoginButtonClicked"/>
+</StackLayout>
+
 </ContentPage>
 
