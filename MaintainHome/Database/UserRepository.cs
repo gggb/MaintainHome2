@@ -24,6 +24,7 @@ namespace MaintainHome.Database
             }
         }
 
+        // Add User
         public async Task<bool> AddUserAsync(User user)
         {
             try
@@ -43,6 +44,7 @@ namespace MaintainHome.Database
             }
         }
 
+        //Get specific user
         public async Task<User> GetUserAsync(int userId)
         {
             try
@@ -71,6 +73,7 @@ namespace MaintainHome.Database
             }
         }
 
+        // Get user by name & password
         public async Task<User> GetUserByUsernameAndPassword(string username, string password)
         {
             try
@@ -97,6 +100,7 @@ namespace MaintainHome.Database
             }
         }
 
+        // Update user
         public async Task<bool> UpdateUserAsync(User user)
         {
             try
@@ -110,6 +114,7 @@ namespace MaintainHome.Database
             }
         }
 
+        //Delete User
         public async Task<bool> DeleteUserAsync(int userId)
         {
             try

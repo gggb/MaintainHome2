@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace MaintainHome.Views
 {
@@ -19,6 +20,9 @@ namespace MaintainHome.Views
         private int? _selectedUserId;
         private bool _showUnscheduled = false; // Declare _showUnscheduled variable here
 
+        // Add the filtering flag
+        private bool _isFiltering = false;
+
         public ObservableCollection<Tasks> AllTasks { get; private set; } = new ObservableCollection<Tasks>();
         public ObservableCollection<Tasks> FilteredTasks { get; private set; } = new ObservableCollection<Tasks>();
         public ObservableCollection<User> Users { get; private set; } = new ObservableCollection<User>();
@@ -30,21 +34,21 @@ namespace MaintainHome.Views
             BindingContext = this;
 
             // Check if the user is logged in
-            if (App.CurrentUser == null) 
-            { 
-                MainThread.BeginInvokeOnMainThread(async () => 
-                { 
-                    await DisplayAlert("Alert", "You must login first", "OK"); 
-                    Application.Current.MainPage = new Login(); 
-                }); 
+            if (App.CurrentUser == null)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("Alert", "You must login first", "OK");
+                    Application.Current.MainPage = new Login();
+                });
             }
             else
             {
                 try
                 {
                     // Clear existing collections
-                    AllTasks.Clear(); 
-                    FilteredTasks.Clear(); 
+                    AllTasks.Clear();
+                    FilteredTasks.Clear();
                     Users.Clear();
 
                     _tasksRepository = new TasksRepository();
@@ -71,8 +75,14 @@ namespace MaintainHome.Views
         {
             try
             {
-                var tasks = await _tasksRepository.GetTasksAsync();
-                _tasks = new ObservableCollection<Tasks>(tasks);
+                Debug.WriteLine($"****LoadDataAsync**** called with _isFiltering={_isFiltering}");
+                if (!_isFiltering)
+                {
+                    var tasks = await _tasksRepository.GetTasksAsync();
+                    _tasks = new ObservableCollection<Tasks>(tasks);
+                }
+                //var tasks = await _tasksRepository.GetTasksAsync();
+                //_tasks = new ObservableCollection<Tasks>(tasks);
 
                 var categories = await _categoryRepository.GetAllCategoriesAsync();
                 _categories = categories.ToDictionary(c => c.CategoryId, c => c.Title);
@@ -114,14 +124,14 @@ namespace MaintainHome.Views
             _selectedUserId = selectedItem?.UserId;
             Debug.WriteLine($"Selected UserId: {_selectedUserId}");
         }
-        private async void OnSearchButtonClicked(object sender, EventArgs e)
+        private async void OnSearchButtonClicked9(object sender, EventArgs e)
         {
             // Get the search criteria
             var status = StatusPicker.SelectedItem?.ToString();
             var priority = PriorityPicker.SelectedItem?.ToString();
 
-            var userId = UserIdPicker.SelectedItem != null && ((UserIdPickerItem)UserIdPicker.SelectedItem).UserName != "None" 
-                ? ((UserIdPickerItem)UserIdPicker.SelectedItem).UserId 
+            var userId = UserIdPicker.SelectedItem != null && ((UserIdPickerItem)UserIdPicker.SelectedItem).UserName != "None"
+                ? ((UserIdPickerItem)UserIdPicker.SelectedItem).UserId
                 : (int?)null;
 
             var categoryTitle = CategoryPicker.SelectedItem?.ToString();
@@ -135,7 +145,7 @@ namespace MaintainHome.Views
             // Prepare the search criteria message
             var criteriaMessage = $"Status: {status ?? "Any"}\n" +
                                   $"Priority: {priority ?? "Any"}\n" +
-                                  $"User ID: {userId?.ToString() ?? "Any"}\n" + 
+                                  $"User ID: {userId?.ToString() ?? "Any"}\n" +
                                   $"Category ID: {categoryId?.ToString() ?? "Any"}\n" +
                                   $"Due Date Start: {dueDateStart?.ToString("MM/dd/yyyy") ?? "Any"}\n" +
                                   $"Due Date End: {dueDateEnd?.ToString("MM/dd/yyyy") ?? "Any"}";
@@ -168,6 +178,86 @@ namespace MaintainHome.Views
             // Update the traffic light icon after search
             UpdateTrafficLightIcon();
         }
+        private async void OnSearchButtonClicked(object sender, EventArgs e)
+        {
+            // Set the filtering flag to true
+            _isFiltering = true;
+
+            // Get the search criteria
+            var status = StatusPicker.SelectedItem?.ToString();
+            var priority = PriorityPicker.SelectedItem?.ToString();
+
+            var userId = UserIdPicker.SelectedItem != null && ((UserIdPickerItem)UserIdPicker.SelectedItem).UserName != "None"
+                ? ((UserIdPickerItem)UserIdPicker.SelectedItem).UserId
+                : (int?)null;
+
+            var categoryTitle = CategoryPicker.SelectedItem?.ToString();
+            var categoryId = categoryTitle != "None" && CategoryPicker.SelectedItem != null
+                ? _categories.FirstOrDefault(x => x.Value == categoryTitle).Key
+                : (int?)null;
+
+            var dueDateStart = DueDateStartPicker.Date != DateTime.Today ? DueDateStartPicker.Date : (DateTime?)null;
+            var dueDateEnd = DueDateEndPicker.Date != DateTime.Today ? DueDateEndPicker.Date : (DateTime?)null;
+
+            // Prepare the search criteria message
+            var criteriaMessage = $"Status: {status ?? "Any"}\n" +
+                                  $"Priority: {priority ?? "Any"}\n" +
+                                  $"User ID: {userId?.ToString() ?? "Any"}\n" +
+                                  $"Category ID: {categoryId?.ToString() ?? "Any"}\n" +
+                                  $"Due Date Start: {dueDateStart?.ToString("MM/dd/yyyy") ?? "Any"}\n" +
+                                  $"Due Date End: {dueDateEnd?.ToString("MM/dd/yyyy") ?? "Any"}";
+
+            // Show the dialog box
+            bool confirm = await DisplayAlert("Confirm Search Criteria", criteriaMessage, "Confirm", "Cancel");
+
+            if (!confirm)
+            {
+                // User cancelled the search
+                return;
+            }
+
+            // Add debugging output
+            Debug.WriteLine($"Search Criteria - Status: {status}, Priority: {priority}, CategoryId: {categoryId}, DueDateStart: {dueDateStart}, DueDateEnd: {dueDateEnd}");
+
+            // Perform the search
+            var filteredTasks = await _tasksRepository.SearchTasksAsync(status, priority, userId, categoryId, dueDateStart, dueDateEnd);
+
+            // Debugging output to check the returned tasks
+            Debug.WriteLine("Filtered Tasks:");
+            foreach (var task in filteredTasks)
+            {
+                Debug.WriteLine($"Task: {task.Title}, Status: {task.Status}, DueDate: {task.DueDate}, Priority: {task.Priority}, Category: {task.CategoryId}");
+            }
+
+            // Ensure the UI updates by clearing and re-adding tasks
+            AllTasks.Clear();
+            foreach (var task in filteredTasks)
+            {
+                AllTasks.Add(task);
+            }
+
+            // Force the UI to rebind by setting ItemsSource to null and then back to AllTasks
+            //FilteredTasks.ItemsSource = null;
+            //FilteredTasks.ItemsSource = AllTasks;
+
+            // Debugging output to check AllTasks contents Debug.WriteLine("Contents of AllTasks after filtering:");
+            foreach (var task in AllTasks)
+            {
+                Debug.WriteLine($"*****Task: {task.Title}, Status: {task.Status}, DueDate: {task.DueDate}, Priority: {task.Priority}, Category: {task.CategoryId}");
+            }
+
+
+            // Ensure UI Binding is notified of changes
+            OnPropertyChanged(nameof(AllTasks));
+
+            // Add debugging output for the final task count
+            Debug.WriteLine($"Filtered Tasks Count: {filteredTasks.Count}");
+
+            OnPropertyChanged(nameof(AllTasks));
+
+            // Update the traffic light icon after search
+            UpdateTrafficLightIcon();
+        }
         private void OnResetDatesButtonClicked(object sender, EventArgs e)
         {
             DueDateStartPicker.Date = DateTime.Today; // Use DateTime.MinValue as the "unset" indicator
@@ -178,7 +268,11 @@ namespace MaintainHome.Views
             base.OnAppearing();
             try
             {
-                LoadDataAsync().ConfigureAwait(false);
+                if (!_isFiltering)
+                {
+                    LoadDataAsync().ConfigureAwait(false);
+                }
+
                 //LoadData();
                 //FilterAndSortTasks();
                 //ApplyEmphasisToOverdueTasks();
@@ -207,12 +301,12 @@ namespace MaintainHome.Views
                 }
 
                 // Filter based on _showUnscheduled
-                //var filteredTasks = _showUnscheduled ? sortedTasks : sortedTasks.Where(t => t.Status != "Unscheduled").ToList();
-                var filteredTasks = sortedTasks;
+                var filteredTasks = _showUnscheduled ? sortedTasks : sortedTasks.Where(t => t.Status != "Unscheduled").ToList();
+                filteredTasks = sortedTasks;
                 FilteredTasks.Clear();
                 foreach (var task in filteredTasks)
                 {
-                    FilteredTasks.Add(task); 
+                    FilteredTasks.Add(task);
                 }
             }
             catch (Exception ex)
@@ -224,14 +318,14 @@ namespace MaintainHome.Views
         {
             try
             {
-                 foreach (var task in AllTasks)
+                foreach (var task in AllTasks)
                 {
                     if (task.DueDate <= DateTime.Now && !task.Title.Contains("⚠️"))
                     {
                         task.Title = $"⚠️ {task.Title}";
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -265,26 +359,26 @@ namespace MaintainHome.Views
                 Debug.WriteLine($"Error updating traffic light icon: {ex.Message}");
             }
         }
-        private void UpdateTrafficLightIndicator(string status) 
+        private void UpdateTrafficLightIndicator(string status)
         {
             OverdueAlertExplanation.Text = "";
-            RedLight.IsVisible = false; 
-            YellowLight.IsVisible = false; 
-            GreenLight.IsVisible = false; 
-            switch (status) 
-            { 
-                case "red": 
+            RedLight.IsVisible = false;
+            YellowLight.IsVisible = false;
+            GreenLight.IsVisible = false;
+            switch (status)
+            {
+                case "red":
                     RedLight.IsVisible = true;
                     OverdueAlertExplanation.Text = "Red light & ⚠️ indicates overdue tasks";
-                    break; 
-                case "yellow": 
+                    break;
+                case "yellow":
                     YellowLight.IsVisible = true;
                     OverdueAlertExplanation.Text = "Yellow light indicates task(s) due within 3 days";
-                    break; 
-                case "green": 
-                    GreenLight.IsVisible = true; 
-                    break; 
-            } 
+                    break;
+                case "green":
+                    GreenLight.IsVisible = true;
+                    break;
+            }
         }
         private async void OnAddTaskButtonClicked(object sender, EventArgs e)
         {
@@ -354,10 +448,63 @@ namespace MaintainHome.Views
                 Debug.WriteLine($"Error handling task double tap: {ex.Message}");
             }
         }
-        private async void OnToggleUnscheduledClicked(object sender, EventArgs e) 
-        { 
-            _showUnscheduled = !_showUnscheduled; 
-            FilterAndSortTasks(); 
+        private async void OnToggleUnscheduledClicked(object sender, EventArgs e)
+        {
+            _showUnscheduled = !_showUnscheduled;
+            ToggleUnscheduledTasks();
         }
+        private void ToggleUnscheduledTasks()
+        {
+            try
+            {
+                // Filter tasks based on _showUnscheduled
+                var visibleTasks = _showUnscheduled
+                                   ? _tasks.ToList()
+                                   : _tasks.Where(t => t.Status != "Unscheduled").ToList();
+
+                // Update AllTasks with visible tasks
+                AllTasks.Clear();
+                foreach (var task in visibleTasks)
+                {
+                    AllTasks.Add(task);
+                }
+
+                // Notify CollectionView to refresh
+                TaskCollectionView.ItemsSource = null;
+                TaskCollectionView.ItemsSource = AllTasks;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error toggling unscheduled tasks: {ex.Message}");
+            }
+        }
+
+
+        private void ToggleUnscheduledTasks8()
+        {
+            try
+            {
+                // Convert _tasks to a list for filtering
+                var tasksList = _tasks.ToList();
+
+                // Filter tasks based on _showUnscheduled
+                var filteredTasks = _showUnscheduled
+                                    ? tasksList
+                                    : tasksList.Where(t => t.Status != "Unscheduled").ToList();
+
+                // Clear and update the FilteredTasks collection
+                FilteredTasks.Clear();
+                foreach (var task in filteredTasks)
+                {
+                    FilteredTasks.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error toggling unscheduled tasks: {ex.Message}");
+            }
+        }
+
     }
 }
+

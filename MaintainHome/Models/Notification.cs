@@ -9,6 +9,8 @@ using System.ComponentModel;
 
 namespace MaintainHome.Models
 {
+    
+    
     public class Notification
     {
         [PrimaryKey, AutoIncrement]

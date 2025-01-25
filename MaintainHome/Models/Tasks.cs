@@ -10,6 +10,10 @@ namespace MaintainHome.Models
 {
     public class Tasks : BaseEntity
     {
+        // Properties inherited from BaseEntity 
+        // public DateTime CreatedDate { get; set; } 
+        // public DateTime ModifiedDate { get; set; }
+        
         private readonly TasksRepository? _tasksRepository;
 
         public Tasks() { }   // Parameterless constructor
@@ -31,11 +35,6 @@ namespace MaintainHome.Models
         public bool OverdueAlertSent { get; set; }
         public bool CompletionNotificationSent { get; set; }
         public bool RepeatedOverDueAlertdScheduled { get; set; }
-
-
-
-
-        //[Indexed] public int TaskHelpsId { get; set; }
 
         public override async Task<bool> Add()
         {

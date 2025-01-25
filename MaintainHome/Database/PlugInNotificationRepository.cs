@@ -23,36 +23,6 @@ namespace MaintainHome.Database
                 Debug.WriteLine($"Error initializing database connection: {ex.Message}");
             }
         }
-
-        // Create (Add) PlugInNotification
-        public async Task<bool> AddPlugInNotificationAsync(PlugInNotification notification)
-        {
-            try
-            {
-                return await _database.InsertAsync(notification) > 0;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error adding PlugInNotification: {ex.Message}");
-                return false;
-            }
-        }
-
-        // Read (Get) PlugInNotification by ID
-        public async Task<PlugInNotification> GetPlugInNotificationAsync(int notificationId)
-        {
-            try
-            {
-                return await _database.FindAsync<PlugInNotification>(notificationId);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting PlugInNotification by ID: {ex.Message}");
-                return null;
-            }
-        }
-
-
         
         public async Task AddOrUpdatePlugInNotificationAsync(PlugInNotification notification)
         {
@@ -63,7 +33,7 @@ namespace MaintainHome.Database
                                                            .Where(n => n.TaskId == notification.TaskId)
                                                            .ToListAsync();
 
-                if (existingNotifications.Count > 1)
+                if (existingNotifications.Count > 1)   // This should not occur... EVER!!!!
                 {
                     Debug.WriteLine($"Warning: Multiple notifications found for TaskId {notification.TaskId}"); 
                     // Optionally handle the cleanup of duplicates here
@@ -122,37 +92,7 @@ namespace MaintainHome.Database
             }
         }
 
-
-
-        // Read (Get) all PlugInNotifications for a specific TaskId
-        public async Task<List<PlugInNotification>> GetAllPlugInNotificationsByTaskIdAsync(int taskId)
-        {
-            try
-            {
-                return await _database.Table<PlugInNotification>().Where(n => n.TaskId == taskId).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting all PlugInNotifications by TaskId: {ex.Message}");
-                return new List<PlugInNotification>();
-            }
-        }
-
-        // Update PlugInNotification
-        public async Task<bool> UpdatePlugInNotificationAsync(PlugInNotification notification)
-        {
-            try
-            {
-                return await _database.UpdateAsync(notification) > 0;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error updating PlugInNotification: {ex.Message}");
-                return false;
-            }
-        }
-
-        // Delete PlugInNotification
+       // Delete PlugInNotification
         public async Task<bool> DeletePlugInNotificationAsync(int notificationId)
         {
             try

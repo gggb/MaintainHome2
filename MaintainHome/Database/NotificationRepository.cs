@@ -9,7 +9,6 @@ namespace MaintainHome.Database
     public class NotificationRepository
     {
         private readonly SQLiteAsyncConnection _database;
-
         public NotificationRepository()
         {
             try

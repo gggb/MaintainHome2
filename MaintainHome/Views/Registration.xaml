@@ -3,37 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:behaviors="clr-namespace:MaintainHome.Behaviors"
              x:Class="MaintainHome.Views.Registration"
+             BackgroundColor="{StaticResource BackgroundColor}"
              Padding="10">
 
-    <StackLayout Spacing="20" VerticalOptions="Center">
+<StackLayout Spacing="20" VerticalOptions="Center">
     <Label Text="Create Account" FontSize="32" HorizontalOptions="Center" TextColor="Black"/>
 
     <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
         <Label Text="Username:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
-        <Entry x:Name="UsernameEntry" Placeholder="Please enter username" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+        <Entry x:Name="UsernameEntry" Placeholder="Please enter username" TextColor="Black" WidthRequest="200"/>
     </StackLayout>
 
     <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
         <Label Text="Password:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
-            <Entry x:Name="PasswordEntry" Placeholder="Please enter password" IsPassword="True" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+        <Entry x:Name="PasswordEntry" Placeholder="Please enter password" IsPassword="True" TextColor="Black" WidthRequest="200"/>
     </StackLayout>
 
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+    <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
         <Label Text="Email:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
-            <Entry x:Name="EmailEntry" Placeholder="Please enter email" TextColor="Black" BackgroundColor="White" WidthRequest="200"/>
+        <Entry x:Name="EmailEntry" Placeholder="Please enter email" TextColor="Black" WidthRequest="200">
+            <Entry.Behaviors>
+                <behaviors:EmailValidationBehavior />
+            </Entry.Behaviors>
+        </Entry>
     </StackLayout>
     
     <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
         <Label Text="Phone:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
-            <Entry x:Name="PhoneEntry" Placeholder="Please enter phone number" TextColor="Black" BackgroundColor="White" WidthRequest="200">
+        <Entry x:Name="PhoneEntry" Placeholder="Please enter phone number" TextColor="Black" WidthRequest="200">
             <Entry.Behaviors>
                 <behaviors:PhoneNumberBehavior />
             </Entry.Behaviors>
         </Entry>
     </StackLayout>
-    
-   
-    
+        
     <Button Text="Register" Clicked="OnRegisterButtonClicked"/>
     
     <Label x:Name="RegisterMessageLabel" Text="" TextColor="Red" HorizontalOptions="Center"/>

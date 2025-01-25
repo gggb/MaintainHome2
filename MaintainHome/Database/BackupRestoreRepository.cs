@@ -45,7 +45,7 @@ namespace MaintainHome.Database
             {
                 var requiredTables = new string[]
                 {
-            "User", "PartBuy", "PartInfo", "Tasks", "TaskActivity", "Notification",
+            "User", "PartInfo", "Tasks", "TaskActivity", "Notification",
             "Category", "TaskHelp", "TaskNote", "PlugInNotification"
                 };
 
@@ -69,14 +69,17 @@ namespace MaintainHome.Database
         {
             try
             {
+                Console.WriteLine($"PerformBackupAsync: Checking if original database exists at {_databasePath}");
                 if (File.Exists(_databasePath))
                 {
                     // Ensure previous backup file is deleted before copying
                     if (File.Exists(_backupPath))
                     {
+                        Console.WriteLine("PerformBackupAsync: Previous backup file exists. Deleting...");
                         File.Delete(_backupPath);
                     }
 
+                    Console.WriteLine("PerformBackupAsync: Starting manual copy operation...");
                     // Perform the manual copy operation using streams
                     using (var sourceStream = new FileStream(_databasePath, FileMode.Open, FileAccess.Read))
                     using (var destinationStream = new FileStream(_backupPath, FileMode.CreateNew, FileAccess.Write))
@@ -87,23 +90,28 @@ namespace MaintainHome.Database
                     // Verify that the backup file was indeed created
                     if (File.Exists(_backupPath))
                     {
-                        return (true, "Backup completed successfully.");
+                        Console.WriteLine("PerformBackupAsync: Backup completed successfully.");
+                        return (true, $"Backup completed successfully at: {_backupPath}");
                     }
                     else
                     {
+                        Console.WriteLine($"PerformBackupAsync: Unable to verify the creation of backup file at: {_backupPath}");
                         return (false, $"Unable to verify the creation of backup file at: {_backupPath}");
                     }
                 }
                 else
                 {
+                    Console.WriteLine($"PerformBackupAsync: Original database file not found at: {_databasePath}");
                     return (false, $"Original database file not found at: {_databasePath}");
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"PerformBackupAsync: Backup failed: {ex.Message}");
                 return (false, $"Backup failed: {ex.Message}");
             }
         }
+
 
         public async Task<(bool, string)> CheckBackupIntegrityBeforeRestoreAsync()
         {
@@ -118,7 +126,7 @@ namespace MaintainHome.Database
 
                 var requiredTables = new string[]
                 {
-            "User", "PartBuy", "PartInfo", "Tasks", "TaskActivity", "Notification",
+            "User", "PartInfo", "Tasks", "TaskActivity", "Notification",
             "Category", "TaskHelp", "TaskNote", "PlugInNotification"
                 };
 
@@ -209,7 +217,7 @@ namespace MaintainHome.Database
 
                 var requiredTables = new string[]
                 {
-            "User", "PartBuy", "PartInfo", "Tasks", "TaskActivity", "Notification",
+            "User", "PartInfo", "Tasks", "TaskActivity", "Notification",
             "Category", "TaskHelp", "TaskNote", "PlugInNotification"
                 };
 
@@ -252,7 +260,7 @@ namespace MaintainHome.Database
                     // Check if all required tables exist
                     var requiredTables = new string[]
                     {
-                "User", "PartBuy", "PartInfo", "Tasks", "TaskActivity", "Notification",
+                "User", "PartInfo", "Tasks", "TaskActivity", "Notification",
                 "Category", "TaskHelp", "TaskNote", "PlugInNotification"
                     };
 

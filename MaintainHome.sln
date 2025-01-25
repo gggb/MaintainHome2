@@ -1,22 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaintainHome", "MaintainHome\MaintainHome.csproj", "{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM64 = Debug|ARM64
 		Release|Any CPU = Release|Any CPU
+		Release|ARM64 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|ARM64.Build.0 = Debug|ARM64
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Debug|ARM64.Deploy.0 = Debug|ARM64
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|ARM64.ActiveCfg = Release|ARM64
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|ARM64.Build.0 = Release|ARM64
+		{A2E77BB0-406D-4DEC-A4EB-0559A4D3C5C6}.Release|ARM64.Deploy.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

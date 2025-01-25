@@ -118,7 +118,7 @@ namespace MaintainHome.Controls
                 System.Diagnostics.Debug.WriteLine($"Task ID: {taskId}, Fetched Parts: {taskParts.Count}");
                 foreach (var PartInfo in taskParts)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Task Help ID: {PartInfo.TaskId}, Type: {PartInfo.Name}, HelpContent: {PartInfo.Description}");
+                    System.Diagnostics.Debug.WriteLine($"Task Part ID: {PartInfo.TaskId}, Type: {PartInfo.Name}, PartContent: {PartInfo.Description}");
                 }
                 ItemsSource = new ObservableCollection<PartInfo>(taskParts);
 
@@ -134,7 +134,7 @@ namespace MaintainHome.Controls
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading task Parts: {ex.Message}");
-                await DisplayAlert("Error", "An error occurred while loading task Parts.", "OK");
+                await DisplayAlert("Error", "An error occurred while loading task parts.", "OK");
             }
         }
 
@@ -156,10 +156,10 @@ namespace MaintainHome.Controls
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error creating new task Help: {ex.Message}");
+                Debug.WriteLine($"Error creating new task Part: {ex.Message}");
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await DisplayAlert("Error", "An error occurred while creating a new task Help.", "OK");
+                    await DisplayAlert("Error", "An error occurred while creating a new task part.", "OK");
                 });
             }
         }
@@ -182,7 +182,7 @@ namespace MaintainHome.Controls
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
-                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to save the Task Help data?", "Yes", "No");
+                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to save the task part data?", "Yes", "No");
                     if (!confirm)
                     {
                         return;
@@ -192,17 +192,17 @@ namespace MaintainHome.Controls
                 if (SelectedItem != null)  // SelectedItem should never be null
                 {
                     var repository = new PartInfoRepository();
-                    if (SelectedItem.PartInfoId == 0) // New task Help - Add
+                    if (SelectedItem.PartInfoId == 0) // New task Part - Add
                     {
                         await repository.AddPartsInfoAsync(SelectedItem);
                         ItemsSource.Add(SelectedItem);
                     }
-                    else // Modified task Help - Update
+                    else // Modified task Part - Update
                     {
                         await repository.UpdatePartsInfoAsync(SelectedItem);
                     }
 
-                    // Refresh the entire task Help list
+                    // Refresh the entire task Part list
                     await LoadData(TaskId);
 
                     // Call the OnCancelButtonClicked method
@@ -211,8 +211,8 @@ namespace MaintainHome.Controls
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error saving task Help: {ex.Message}");
-                await DisplayAlert("Error", "An error occurred while saving the task Help.", "OK");
+                Debug.WriteLine($"Error saving task Part: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while saving the task part.", "OK");
             }
         }
 
@@ -235,7 +235,7 @@ namespace MaintainHome.Controls
                 var parentPage = GetParentPage();
                 if (parentPage != null)
                 {
-                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to DELETE the Task note data?", "Yes", "No");
+                    bool confirm = await parentPage.DisplayAlert("Confirm Update", "Are you sure you want to DELETE the task part data?", "Yes", "No");
                     if (!confirm)
                     {
                         return;
@@ -249,7 +249,7 @@ namespace MaintainHome.Controls
                     
                     await repository.DeletePartsInfoAsync(SelectedItem.PartInfoId);
                     ItemsSource.Remove(SelectedItem);
-                    await parentPage.DisplayAlert("Confirm Update", "The Task note record has been deleted.", "OK");
+                    await parentPage.DisplayAlert("Confirm Update", "The task part record has been deleted.", "OK");
 
                     // Clear the binding context or set it to a new part
                     NameEntry.Text = string.Empty; 
@@ -260,14 +260,14 @@ namespace MaintainHome.Controls
                     SelectedItem = null;
                     BindingContext = new PartInfo();
 
-                    // Refresh the entire task note list
+                    // Refresh the entire task part list
                     await LoadData(TaskId);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error deleting task note: {ex.Message}");
-                await DisplayAlert("Error", "An error occurred while deleting the task note.", "OK");
+                Debug.WriteLine($"Error deleting task part: {ex.Message}");
+                await DisplayAlert("Error", "An error occurred while deleting the task part.", "OK");
             }
         }
 
@@ -290,12 +290,12 @@ namespace MaintainHome.Controls
                 // Re-enable selection when canceling add
                 CollectionSelectionMode = SelectionMode.Single;
 
-                // Refresh the entire task note list
+                // Refresh the entire task part list
                 await LoadData(TaskId);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error canceling task Part: {ex.Message}");
+                Debug.WriteLine($"Error canceling task part: {ex.Message}");
                 await DisplayAlert("Error", "An error occurred while canceling the task Part.", "OK");
             }
         }

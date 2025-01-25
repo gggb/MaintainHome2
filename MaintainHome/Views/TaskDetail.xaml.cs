@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 using MaintainHome.Database;
 using Plugin.LocalNotification;
+//using EventKit;
 
 namespace MaintainHome.Views
 {   
@@ -67,7 +68,7 @@ namespace MaintainHome.Views
         {
             // Call the async method and handle it properly
             OnSaveButtonClickedAsync(sender, e).ConfigureAwait(false);
-        }
+        }    //apparently a click button event cannot call an async, non-void method, so i created a 
         public async Task OnSaveButtonClickedAsync(object sender, EventArgs e)
         {           
             //Ensure _task is not null
@@ -84,15 +85,23 @@ namespace MaintainHome.Views
             }
 
 
-            // Validate TaskDetail edit entries.
             var task = (Tasks)BindingContext;
+            // Ensure Duedate is greater than now + 65 minutes for the notification to work correctly.
+            var today = DateTime.Today;
+            task.DueDate = DateTime.Now.AddMinutes(65); // Ensure DueDate is set to now + 65 minutes for testing and notifications
+            //if(task.DueDate.HasValue && task.DueDate.Value.Date == today)
+            //{ 
+            //    task.DueDate = DateTime.Now.AddMinutes(65); 
+            //}
+
+            // Validate TaskDetail edit entries.
             var validationResults = ValidateTask(task);
 
             // Save edited TaskDetail data, if validation successful
             if (validationResults.Count == 0)
             {
-                // Initialize repository for add or updating tasks                                   // Perhaps, this task update should be moved to the end to 
-                var repository = new TasksRepository();                                              // prevent dbl save confirmation alerts.
+                // Initialize repository for add or updating tasks      // Perhaps, this task update should be moved to the end to 
+                var repository = new TasksRepository();                 // prevent dbl save confirmation alerts.
                 bool goodUpdate;
                 if (task.Id == 0)   // task is new
                 {
@@ -104,16 +113,13 @@ namespace MaintainHome.Views
                     // Update existing task
                     goodUpdate = await repository.UpdateTaskAsync(task);
                 }
-
-                if (goodUpdate)
-                {
-                    await DisplayAlert("Confirm Update #1", "The Task record has been successfully updated.", "OK");
-                }
-                else
+                
+                if (!goodUpdate)
                 {
                     await DisplayAlert("Error", "Failed to update the task. Notification not sent.", "OK"); 
                     return; // Exit if the update fails WITHOUT SENDING NOTIFICATION.
                 }
+                
                 // Ensure notification permissions are granted. It is perfered to ensure permission is granted before
                 // every send (although permission was requested during app startup).                   
                 bool isNotifyPermissionsGranted = await LocalNotificationCenter.Current.AreNotificationsEnabled();
@@ -130,7 +136,7 @@ namespace MaintainHome.Views
                 var notificationRepository = new PlugInNotificationRepository();
                 var existingNotifications = await notificationRepository.GetPlugInNotificationsByTaskIdAsync(task.Id);
                 Debug.WriteLine($"**********PluginNotification Removal Section*****: {existingNotifications}");
-                int _count = 0;
+                //int _count = 0;
                 if (existingNotifications != null && existingNotifications.Count > 0)
                 {
                     foreach (var notification in existingNotifications)  //TaskHelpRepository should only be one!
@@ -152,26 +158,27 @@ namespace MaintainHome.Views
 
                 // Define NotifyTime based on debug or release mode
                 DateTime notifyTime;
-                
 
-#if DEBUG               
-                notifyTime = DateTime.Now.AddSeconds(10);   // for testng purposes, the tester can't wait until DueDate to test the notification, so it is sent in 20 seconds.
 
+#if DEBUG
+                notifyTime = DateTime.Now.AddSeconds(10);   // for testing purposes, the tester can't wait until DueDate to test the notification, so it is sent in 10 seconds.
 #else
-                if (task.DueDate.HasValue)    // In production, notification will be sent immediately but will diplay in android on DueDate at 9:00am.
+                // Release mode
+                if (task.DueDate.HasValue)    // In production, notification will be sent immediately but will display in Android on DueDate at current time + 60 minutes..
                 {
-                    task.DueDate = new DateTime(task.DueDate.Value.Year, task.DueDate.Value.Month, task.DueDate.Value.Day, 9, 0, 0);
-                    notifyTime = DateTime.Now; 
+                    notifyTime = task.DueDate.Value;
                 }
-                else
+                else   // in case task.DueDate has no value, set it to current time (this should NEVER happen)!!!
                 {
-                    notifyTime = DateTime.Now; 
+                    await DisplayAlert("DueDate Alert", "DueDate has no value and is set to the currentdate/time plus 60 minutes.", "OK");
+                    notifyTime = DateTime.Now.AddMinutes(60).AddSeconds(60); // Ensure it meets the 59 minutes requirement
                 }
 #endif
+
                 // Handle notifications (anew) based on task status. 
                 if (task.Status == "Scheduled")
                 {
-                    await ScheduleNotification(task, notifyTime);
+                    await ScheduleNotification(task, notifyTime, goodUpdate);
                 }
                 else if (task.Status == "Completed")
                 {
@@ -192,12 +199,12 @@ namespace MaintainHome.Views
                             task.DueDate = DateTime.Now.AddDays(task.FrequencyDays); 
                         }
 #if DEBUG  
-                            notifyTime = DateTime.Now.AddSeconds(10);   // for testng purposes, the tester can't wait until DueDate to test the notification, so it is sent in 20 seconds.
-#else
-                            notifyTime = task.DueDate ?? DateTime.Now;  // In non debug mode, DueDate is reset to DueDate + FrequencyDays.
+                        notifyTime = DateTime.Now.AddSeconds(10);   // for testng purposes, the tester can't wait until DueDate to test the notification, so it is sent in 20 seconds.
+#else  
+                        notifyTime = (task.DueDate ?? DateTime.Now).AddMinutes(60); // In release mode, ensures notifyTime is at least 60 minutes in the future.
 #endif
-          
-                        await ScheduleNotification(task, notifyTime);
+
+                        await ScheduleNotification(task, notifyTime, goodUpdate);
                         bool goodTaskReset = await repository.UpdateTaskAsync(task);
                         if (goodTaskReset)
                         {
@@ -210,33 +217,6 @@ namespace MaintainHome.Views
                             await DisplayAlert("Task Reset ERROR", $"The task, {task.Title}, could not be reset.", "OK");
                         }
                     }
-
-                    // Update Task status "reset" from 'Completion' to 'Scheduled'.
-                    //goodUpdate = false;
-                    //if (task != null && Task.CompletedTask.Id != 0)   // Not a new or null task
-                    //{
-                    //    // Update existing task
-                    //    goodUpdate = await repository.UpdateTaskAsync(task);
-                    //}
-                    //else
-                    //{
-                    //    // Task is null or Task.Id = 0 means that the task has NEVER been "Scheduled". SHOULD NEVER OCCUR, But just in case...
-                    //    await DisplayAlert("Error", "Task is null or has no ID but is trying to be saved as Completed. Please changed the status to ''Scheduled''.", "OK");
-                    //    return;
-                    //}
-
-                    //if (goodUpdate)
-                    //{
-                    //    await DisplayAlert("Confirm Update #2", "The Task record has been successfully updated.", "OK");
-                    //}
-                    //else
-                    //{
-                    //    await DisplayAlert("Error", "Failed to update the task. Notification not sent.", "OK");
-                    //    return; // Exit if the update fails WITHOUT SENDING NOTIFICATION.
-                    //}
-
-
-
                 }
                 else if (task.Status == "Canceled")
                 {
@@ -328,7 +308,7 @@ namespace MaintainHome.Views
 
 
         }
-        private async Task ScheduleNotification(Tasks task, DateTime notifyTime)
+        private async Task ScheduleNotification(Tasks task, DateTime notifyTime, bool goodUpdate)
         {
             Debug.WriteLine($"***Schedule Notification method STARTING********************");
             Debug.WriteLine($"************* preparing notification data*******************");
@@ -351,6 +331,14 @@ namespace MaintainHome.Views
 #endif
                 },
             };
+
+            // Display alert with notification data
+            await DisplayAlert("Notification Data",
+                $"Title: {notifyRequest.Title}\n" +
+                $"Description: {notifyRequest.Description}\n" +
+                $"NotifyTime: {notifyRequest.Schedule.NotifyTime}\n" +
+                $"Repeat Interval: {notifyRequest.Schedule.NotifyRepeatInterval}", "OK");
+
             Debug.WriteLine($"************Sending notification to the 3rd party plugin*******************");
             bool wasNotifyRequestSuccessful = await LocalNotificationCenter.Current.Show(notifyRequest);
             Debug.WriteLine($"************(1) Notification 'Show' request sent successfully?: {wasNotifyRequestSuccessful} Due-date: {notifyTime}");

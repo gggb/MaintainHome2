@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MaintainHome.Views.Login"
+             BackgroundColor="{StaticResource BackgroundColor}"
              Padding="10">
 
     <StackLayout Spacing="20" VerticalOptions="Center">
@@ -9,11 +10,11 @@
 
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
             <Label Text="Username:" TextColor="Black" VerticalOptions="Center"/>
-            <Entry x:Name="UsernameEntry" Placeholder="Please enter username" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
+            <Entry x:Name="UsernameEntry" Placeholder="Please enter username" PlaceholderColor="DarkGray" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
         </StackLayout>
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
             <Label Text="Password:" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center"/>
-            <Entry x:Name="PasswordEntry" Placeholder="Please enter password" IsPassword="True" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
+            <Entry x:Name="PasswordEntry" Placeholder="Please enter password" PlaceholderColor="DarkGray" IsPassword="True" TextColor="Black" FontAttributes="Bold" WidthRequest="200"/>
         </StackLayout>
 
 

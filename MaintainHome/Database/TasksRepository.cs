@@ -106,6 +106,7 @@ namespace MaintainHome.Database
             {
                 var parameters = new List<object>();
                 var query = "SELECT * FROM Tasks WHERE 1=1";
+
                 if (!string.IsNullOrEmpty(status) && status != "None")
                 {
                     query += " AND Status = ?"; parameters.Add(status);
@@ -130,7 +131,21 @@ namespace MaintainHome.Database
                 {
                     query += " AND DueDate <= ?"; parameters.Add(dueDateEnd.Value);
                 }
-                return await _database.QueryAsync<Tasks>(query, parameters.ToArray());
+
+                // Debugging output
+                Console.WriteLine($"Query: {query}");
+                Console.WriteLine($"Parameters: {string.Join(", ", parameters)}");
+
+                var result = await _database.QueryAsync<Tasks>(query, parameters.ToArray());
+
+                // Debugging output for the result
+                Console.WriteLine("Filtered Tasks:");
+                foreach (var task in result)
+                {
+                    Console.WriteLine($"Task: {task.Title}, Status: {task.Status}, DueDate: {task.DueDate}, Priority: {task.Priority}, Category: {task.CategoryId}");
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -138,5 +153,6 @@ namespace MaintainHome.Database
                 return new List<Tasks>();
             }
         }
+
     }
 }

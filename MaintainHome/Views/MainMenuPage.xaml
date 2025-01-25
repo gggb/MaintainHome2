@@ -1,7 +1,8 @@
 <FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:local="clr-namespace:MaintainHome.Views"
-            x:Class="MaintainHome.Views.MainMenuPage">
+            x:Class="MaintainHome.Views.MainMenuPage"
+            BackgroundColor="{StaticResource BackgroundColor}">
 
     <FlyoutPage.Flyout>
         <ContentPage Title="Menu">
@@ -12,6 +13,8 @@
                 <Button Text="Reports" Clicked="OnReportsClicked" />
                 <Button Text="Initial Setup" Clicked="OnInitialSetupClicked" />
                 <Button Text="Maintenance" Clicked="OnMaintenanceClicked" />
+                <!-- Exit Button -->
+                <Button Text="Exit" Clicked="OnExitClicked" />
             </StackLayout>
         </ContentPage>
     </FlyoutPage.Flyout>
